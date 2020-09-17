@@ -1,0 +1,53 @@
+#!/usr/bin/with-contenv bash
+
+if [ -e /.01-setup-user-complete ]; then
+  exit 0
+fi
+
+current_puid=$(id -u primary-user)
+current_pgid=$(id -g primary-user)
+
+if [[ $PUID && $PUID != $current_puid ]]; then
+  echo "Modifying UID for primary-user ($PUID) ..."
+  usermod -o -u $PUID primary-user
+  echo "Modifying UID for primary-user ($PUID) ... Done"
+fi
+
+if [[ $PGID && $PGID != $current_pgid ]]; then
+  echo "Modifying GID for primary-user ($PGID) ..."
+  groupmod -o -g $PGID primary-user
+  echo "Modifying GID for primary-user ($PGID) ... Done"
+fi
+
+if [[ $SGID ]]; then
+  group_prefix="secondary-group"
+  incoming_sgids=(${SGID//,/ })
+  new_group_count=0
+  new_group_names=()
+
+  for current_incoming_sgid in "${incoming_sgids[@]}"; do
+    if (( $new_group_count == 0 )); then
+      new_group_name=$group_prefix
+    else
+      group_number="0${new_group_count}"
+      new_group_name="$group_prefix-${group_number: -2}"
+    fi
+
+    echo "Adding group $new_group_name ($current_incoming_sgid) ..."
+    groupadd -g $current_incoming_sgid $new_group_name
+    echo "Adding group $new_group_name ($current_incoming_sgid) ... Done"
+
+    new_group_count=$((new_group_count + 1))
+    new_group_names+=($new_group_name)
+  done
+
+  if (( $new_group_count > 0 )); then
+    for new_group_name in "${new_group_names[@]}"; do
+      echo "Adding primary-user to new group ($new_group_name) ..."
+      usermod -a -G $new_group_name primary-user
+      echo "Adding primary-user to new group ($new_group_name) ... Done"
+    done
+  fi
+fi
+
+touch /.01-setup-user-complete
