@@ -1,4 +1,4 @@
-FROM ubuntu:focal-20200729
+FROM ubuntu:focal-20200916
 LABEL maintainer devpow112
 LABEL org.opencontainers.image.source https://github.com/devpow112/docker-base-ubuntu
 
