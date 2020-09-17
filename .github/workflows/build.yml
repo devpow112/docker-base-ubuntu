@@ -1,0 +1,43 @@
+name: build
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    env:
+      PLATFORMS: linux/amd64
+    steps:
+      - name: Setup docker buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+        with:
+          version: latest
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build image
+        if: github.ref != 'refs/heads/main'
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{steps.buildx.outputs.name}}
+          platforms: ${{env.PLATFORMS}}
+          tags: ghcr.io/${{github.actor}}/base-ubuntu
+          push: false
+      - name: Login into registry
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{github.actor}}
+          password: ${{secrets.CONTAINER_REGISTRY_TOKEN}}
+      - name: Build & push image
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{steps.buildx.outputs.name}}
+          platforms: ${{env.PLATFORMS}}
+          tags: ghcr.io/${{github.actor}}/base-ubuntu
+          push: true
