@@ -1,25 +1,25 @@
 FROM ubuntu:focal-20200916
+
+# labels
 LABEL maintainer devpow112
-LABEL org.opencontainers.image.source https://github.com/devpow112/docker-base-ubuntu
+LABEL org.opencontainers.image.source \
+      https://github.com/devpow112/docker-base-ubuntu
 
 # set input arguments to defaults
+ARG TARGETPLATFORM
+ARG TRANSFORM_PATTERN="s/^linux\///;s/^arm64/aarch64/;s/^arm\/v./armhf/"
 ARG S6_OVERLAY_VERSION="2.0.0.1"
-ARG S6_OVERLAY_ARCH="amd64"
-ARG S6_OVERLAY_URL="https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${S6_OVERLAY_ARCH}.tar.gz"
 ARG LANGUAGE="en_US"
 ARG ENCODING="UTF-8"
-ARG DEBIAN_FRONTEND="noninteractive"
 
 # set basic environment variables
-ENV HOME="/root" \
+ENV DEBIAN_FRONTEND="noninteractive"\
+    HOME="/root" \
     TERM="xterm"
 
 # setup directories/volumes
 RUN mkdir /config
 VOLUME /config
-
-# download s6 overlays
-ADD ${S6_OVERLAY_URL} /tmp
 
 # setup packages, language and non root user
 RUN apt-get update && \
@@ -27,13 +27,18 @@ RUN apt-get update && \
     apt-get install -y \
       apt-utils \
       locales \
-      tzdata && \
+      tzdata \
+      curl && \
     localedef \
       -i ${LANGUAGE} -c -f ${ENCODING} \
       -A /usr/share/locale/locale.alias \
       ${LANGUAGE}.${ENCODING} && \
+    S6_OVERLAY_ARCH=$(echo ${TARGETPLATFORM} | sed ${TRANSFORM_PATTERN}) && \
+    URL='https://github.com/just-containers/s6-overlay/releases/download/' && \
+    URL="${URL}v${S6_OVERLAY_VERSION}/s6-overlay-${S6_OVERLAY_ARCH}.tar.gz" && \
+    curl -o /tmp/s6-overlay.tar.gz -L ${URL} && \
     tar xfz \
-      /tmp/s6-overlay-${S6_OVERLAY_ARCH}.tar.gz \
+      /tmp/s6-overlay.tar.gz \
       -C / && \
     useradd \
       -U -d /config \
