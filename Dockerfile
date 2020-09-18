@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.source \
 # set input arguments to defaults
 ARG TARGETPLATFORM
 ARG TRANSFORM_PATTERN="s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/"
-ARG S6_OVERLAY_VERSION="2.0.0.1"
+ARG S6_OVERLAY_VERSION="2.1.0.0"
 ARG LANGUAGE="en_US"
 ARG ENCODING="UTF-8"
 
