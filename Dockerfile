@@ -38,9 +38,8 @@ RUN apt-get update && \
     URL="${URL}v${S6_OVERLAY_VERSION}/s6-overlay-${S6_OVERLAY_ARCH}.tar.gz" && \
     echo "Downloading s6 overlay: ${URL}" && \
     curl -o /tmp/s6-overlay.tar.gz -L ${URL} && \
-    tar xfz \
-      /tmp/s6-overlay.tar.gz \
-      -C / && \
+    tar xzf /tmp/s6-overlay.tar.gz -C / --exclude="./bin" && \
+    tar xzf /tmp/s6-overlay.tar.gz -C /usr ./bin && \
     useradd \
       -U -d /config \
       -s /bin/false primary-user && \
