@@ -10,7 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
+      PACKAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
     steps:
+      - name: Gather info
+        id: info
+        run: |
+          TAGS="${PACKAGE}:latest"
+          TAGS="${TAGS},${PACKAGE}:$(date +%Y%m%d)"
+          echo ${TAGS}
+          echo "##[set-output name=TAGS;]${TAGS}"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
         with:
@@ -28,7 +36,7 @@ jobs:
         with:
           builder: ${{steps.buildx.outputs.name}}
           platforms: ${{env.PLATFORMS}}
-          tags: ghcr.io/${{github.repository_owner}}/base-ubuntu
+          tags: ${{steps.info.outputs.TAGS}}
           push: false
       - name: Login into registry
         if: github.ref == 'refs/heads/main'
@@ -43,5 +51,5 @@ jobs:
         with:
           builder: ${{steps.buildx.outputs.name}}
           platforms: ${{env.PLATFORMS}}
-          tags: ghcr.io/${{github.repository_owner}}/base-ubuntu
+          tags: ${{steps.info.outputs.TAGS}}
           push: true
