@@ -17,7 +17,6 @@ jobs:
         run: |
           TAGS="${PACKAGE}:latest"
           TAGS="${TAGS},${PACKAGE}:$(date +%Y%m%d)"
-          echo ${TAGS}
           echo "##[set-output name=TAGS;]${TAGS}"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
