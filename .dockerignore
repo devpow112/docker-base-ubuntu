@@ -3,7 +3,6 @@
 .dockerignore
 .gitattributes
 .gitignore
-CODEOWNERS
 Dockerfile
 LICENSE
 README.md
