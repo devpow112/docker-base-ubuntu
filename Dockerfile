@@ -19,9 +19,6 @@ FROM ubuntu:focal-20200925
 ARG LANGUAGE="en_US"
 ARG ENCODING="UTF-8"
 
-# copy over s6 archive
-COPY --from=s6-overlay /tmp/s6-overlay.tar.gz /tmp
-
 # set basic environment variables
 ENV DEBIAN_FRONTEND="noninteractive" \
     HOME="/root" \
@@ -30,6 +27,9 @@ ENV DEBIAN_FRONTEND="noninteractive" \
 # setup directories and volumes
 RUN mkdir /config
 VOLUME /config
+
+# copy over s6 archive
+COPY --from=s6-overlay /tmp/s6-overlay.tar.gz /tmp
 
 # setup packages, locale and non-root user
 RUN apt-get update && \
