@@ -5,7 +5,8 @@ ARG TARGETPLATFORM
 ARG S6_OVERLAY_VERSION="2.1.0.0"
 
 # download s6 overlay archive
-RUN apt-get update && \
+RUN export DEBIAN_FRONTEND='noninteractive' && \
+    apt-get update && \
     apt-get install -y curl && \
     TRANSFORM_PATTERN='s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/' && \
     S6_OVERLAY_ARCH=$(echo ${TARGETPLATFORM} | sed ${TRANSFORM_PATTERN}) && \
@@ -20,8 +21,7 @@ ARG LANGUAGE="en_US"
 ARG ENCODING="UTF-8"
 
 # set basic environment variables
-ENV DEBIAN_FRONTEND="noninteractive" \
-    HOME="/root" \
+ENV HOME="/root" \
     TERM="xterm"
 
 # setup directories and volumes
@@ -32,7 +32,8 @@ VOLUME /config
 COPY --from=s6-overlay /tmp/s6-overlay.tar.gz /tmp
 
 # setup packages, locale and non-root user
-RUN apt-get update && \
+RUN export DEBIAN_FRONTEND='noninteractive' && \
+    apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y \
       apt-utils \
