@@ -1,4 +1,4 @@
-FROM ubuntu:focal-20200925 AS s6-overlay
+FROM ubuntu:focal-20201008 AS s6-overlay
 
 # set input arguments to defaults
 ARG TARGETPLATFORM
@@ -14,7 +14,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     URL="${URL}v${S6_OVERLAY_VERSION}/s6-overlay-${S6_OVERLAY_ARCH}.tar.gz" && \
     curl -o /tmp/s6-overlay.tar.gz -L ${URL}
 
-FROM ubuntu:focal-20200925
+FROM ubuntu:focal-20201008
 
 # set input arguments to defaults
 ARG LANGUAGE="en_US"
