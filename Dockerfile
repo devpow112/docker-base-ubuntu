@@ -12,7 +12,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     S6_OVERLAY_ARCH=$(echo ${TARGETPLATFORM} | sed ${TRANSFORM_PATTERN}) && \
     URL='https://github.com/just-containers/s6-overlay/releases/download/' && \
     URL="${URL}v${S6_OVERLAY_VERSION}/s6-overlay-${S6_OVERLAY_ARCH}.tar.gz" && \
-    curl -o /tmp/s6-overlay.tar.gz -L ${URL}
+    curl -sSfo /tmp/s6-overlay.tar.gz -L ${URL}
 
 FROM ubuntu:focal-20201106
 
