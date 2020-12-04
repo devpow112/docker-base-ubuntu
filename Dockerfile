@@ -1,4 +1,4 @@
-FROM ubuntu:focal-20201106 AS s6-overlay
+FROM ubuntu:focal-20201106 AS temp
 
 # set input arguments to defaults
 ARG TARGETPLATFORM
@@ -29,7 +29,7 @@ RUN mkdir /config
 VOLUME /config
 
 # copy over s6 archive
-COPY --from=s6-overlay /tmp/s6-overlay.tar.gz /tmp
+COPY --from=temp /tmp/s6-overlay.tar.gz /tmp
 
 # setup packages, locale and non-root user
 RUN export DEBIAN_FRONTEND='noninteractive' && \
