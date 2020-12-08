@@ -11,8 +11,10 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     TRANSFORM_PATTERN='s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/' && \
     S6_OVERLAY_ARCH=$(echo ${TARGETPLATFORM} | sed ${TRANSFORM_PATTERN}) && \
     URL='https://github.com/just-containers/s6-overlay/releases/download/' && \
-    URL="${URL}v${S6_OVERLAY_VERSION}/s6-overlay-${S6_OVERLAY_ARCH}.tar.gz" && \
-    curl -sSfo /tmp/s6-overlay.tar.gz -L ${URL}
+    URL="${URL}v${S6_OVERLAY_VERSION}/" && \
+    URL="${URL}s6-overlay-${S6_OVERLAY_ARCH}-installer" && \
+    curl -sSfo /tmp/s6-overlay-installer -L ${URL} && \
+    chmod u+x /tmp/s6-overlay-installer
 
 FROM ubuntu:focal-20201106
 
@@ -29,7 +31,7 @@ RUN mkdir /config
 VOLUME /config
 
 # copy over s6 archive
-COPY --from=temp /tmp/s6-overlay.tar.gz /tmp
+COPY --from=temp /tmp/s6-overlay-installer /tmp
 
 # setup packages, locale and non-root user
 RUN export DEBIAN_FRONTEND='noninteractive' && \
@@ -43,8 +45,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
       -i ${LANGUAGE} -c -f ${ENCODING} \
       -A /usr/share/locale/locale.alias \
       ${LANGUAGE}.${ENCODING} && \
-    tar xzf /tmp/s6-overlay.tar.gz -C / --exclude='./bin' && \
-    tar xzf /tmp/s6-overlay.tar.gz -C /usr ./bin && \
+    /tmp/s6-overlay-installer / && \
     useradd \
       -U -d /config \
       -s /bin/false primary-user && \
