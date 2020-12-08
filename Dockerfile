@@ -2,7 +2,7 @@ FROM ubuntu:focal-20201106 AS temp
 
 # set input arguments to defaults
 ARG TARGETPLATFORM
-ARG S6_OVERLAY_VERSION="2.1.0.0"
+ARG S6_OVERLAY_VERSION="2.1.0.2"
 
 # download s6 overlay archive
 RUN export DEBIAN_FRONTEND='noninteractive' && \
