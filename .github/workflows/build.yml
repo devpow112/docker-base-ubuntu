@@ -28,6 +28,12 @@ jobs:
         uses: docker/setup-buildx-action@v1
         with:
           driver-opts: image=moby/buildkit:master
+      - name: Cache docker layers
+        uses: actions/cache@v2.1.3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{runner.os}}-buildx-${{github.sha}}
+          restore-keys: ${{runner.os}}-buildx-
       - name: Checkout code
         uses: actions/checkout@v2.3.4
       - name: Build image
@@ -38,6 +44,8 @@ jobs:
           context: .
           platforms: ${{env.PLATFORMS}}
           tags: ${{steps.info.outputs.TAGS}}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
           push: false
       - name: Login into registry
         if: github.ref == 'refs/heads/main'
@@ -54,4 +62,6 @@ jobs:
           context: .
           platforms: ${{env.PLATFORMS}}
           tags: ${{steps.info.outputs.TAGS}}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
           push: true
