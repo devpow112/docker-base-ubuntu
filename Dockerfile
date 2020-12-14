@@ -7,7 +7,9 @@ ARG S6_OVERLAY_VERSION="2.1.0.2"
 # download s6 overlay archive
 RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update && \
-    apt-get install -y curl && \
+    apt-get install --no-install-recommends -y \
+      ca-certificates \
+      curl && \
     TRANSFORM_PATTERN='s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/' && \
     S6_OVERLAY_ARCH=$(echo ${TARGETPLATFORM} | sed ${TRANSFORM_PATTERN}) && \
     URL='https://github.com/just-containers/s6-overlay/releases/download/' && \
@@ -37,7 +39,7 @@ COPY --from=temp /tmp/s6-overlay-installer /tmp
 RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y \
+    apt-get install --no-install-recommends -y \
       apt-utils \
       locales \
       tzdata && \
