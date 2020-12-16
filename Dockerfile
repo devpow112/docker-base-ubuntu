@@ -2,7 +2,7 @@ FROM ubuntu:focal-20201106 AS temp
 
 # set input arguments to defaults
 ARG TARGETPLATFORM
-ARG S6_PLATFORM_TRANSFORM="s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/"
+ARG PLATFORM_TRANSFORM="s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/"
 ARG S6_OVERLAY_VERSION="2.1.0.2"
 
 # download s6 overlay archive
@@ -11,7 +11,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get install --no-install-recommends -y \
       ca-certificates \
       curl && \
-    ARCH=$(echo ${TARGETPLATFORM} | sed "${S6_PLATFORM_TRANSFORM}") && \
+    ARCH=$(echo ${TARGETPLATFORM} | sed "${PLATFORM_TRANSFORM}") && \
     URL='https://github.com/just-containers/s6-overlay/releases/download/' && \
     URL="${URL}v${S6_OVERLAY_VERSION}/s6-overlay-${ARCH}-installer" && \
     curl -sSfo /tmp/s6-overlay-installer -L ${URL} && \
