@@ -2,6 +2,7 @@ FROM ubuntu:focal-20201106 AS temp
 
 # set input arguments to defaults
 ARG TARGETPLATFORM
+ARG S6_PLATFORM_TRANSFORM="s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/"
 ARG S6_OVERLAY_VERSION="2.1.0.2"
 
 # download s6 overlay archive
@@ -10,11 +11,9 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get install --no-install-recommends -y \
       ca-certificates \
       curl && \
-    TRANSFORM_PATTERN='s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/' && \
-    S6_OVERLAY_ARCH=$(echo ${TARGETPLATFORM} | sed ${TRANSFORM_PATTERN}) && \
+    ARCH=$(echo ${TARGETPLATFORM} | sed "${S6_PLATFORM_TRANSFORM}") && \
     URL='https://github.com/just-containers/s6-overlay/releases/download/' && \
-    URL="${URL}v${S6_OVERLAY_VERSION}/" && \
-    URL="${URL}s6-overlay-${S6_OVERLAY_ARCH}-installer" && \
+    URL="${URL}v${S6_OVERLAY_VERSION}/s6-overlay-${ARCH}-installer" && \
     curl -sSfo /tmp/s6-overlay-installer -L ${URL} && \
     chmod u+x /tmp/s6-overlay-installer
 
@@ -28,14 +27,14 @@ ARG ENCODING="UTF-8"
 ENV HOME="/root" \
     TERM="xterm"
 
-# setup directories and volumes
+# set up directories and volumes
 RUN mkdir /config
 VOLUME /config
 
 # copy over s6 archive
 COPY --from=temp /tmp/s6-overlay-installer /tmp
 
-# setup packages, locale and non-root user
+# set up packages, locale and non-root user
 RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update && \
     apt-get upgrade -y && \
