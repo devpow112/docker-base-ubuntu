@@ -44,6 +44,7 @@ jobs:
           tags: ${{steps.info.outputs.tags}}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
+          load: true
           push: false
       - name: Login into registry
         if: github.ref == 'refs/heads/main'
