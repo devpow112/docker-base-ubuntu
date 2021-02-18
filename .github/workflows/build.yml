@@ -36,7 +36,7 @@ jobs:
           key: buildx-${{hashFiles('Dockerfile', '.dockerignore', 'root/**')}}
           restore-keys: buildx-
       - name: Build image
-        uses: docker/build-push-action@v2.2.2
+        uses: docker/build-push-action@v2.3.0
         with:
           builder: ${{steps.buildx.outputs.name}}
           context: .
@@ -54,7 +54,7 @@ jobs:
           password: ${{secrets.CONTAINER_REGISTRY_TOKEN}}
       - name: Push image
         if: github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v2.2.2
+        uses: docker/build-push-action@v2.3.0
         with:
           builder: ${{steps.buildx.outputs.name}}
           context: .
