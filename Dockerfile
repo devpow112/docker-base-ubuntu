@@ -1,4 +1,4 @@
-FROM ubuntu:focal-20210119 AS temp
+FROM ubuntu:focal-20210217 AS temp
 
 # set input arguments to defaults
 ARG TARGETPLATFORM
@@ -17,7 +17,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     curl -sSfo /tmp/s6-overlay-installer -L ${URL} && \
     chmod u+x /tmp/s6-overlay-installer
 
-FROM ubuntu:focal-20210119
+FROM ubuntu:focal-20210217
 
 # set input arguments to defaults
 ARG LANGUAGE="en_US"
