@@ -3,7 +3,7 @@ FROM ubuntu:focal-20210325 AS temp
 # set input arguments to defaults
 ARG TARGETPLATFORM
 ARG PLATFORM_TRANSFORM="s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/"
-ARG S6_OVERLAY_VERSION="2.1.0.2"
+ARG S6_OVERLAY_VERSION="2.2.0.3"
 
 # download s6 overlay archive
 RUN export DEBIAN_FRONTEND='noninteractive' && \
