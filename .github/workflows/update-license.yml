@@ -7,18 +7,23 @@ on:
       - .github/workflows/update-license.yml
   schedule:
     - cron: '0 0 1 1 *'
+env:
+  REGEX: '^(Copyright \(c\) )[0-9]{4}( Devon Powell)$'
 jobs:
   update-license:
     name: Update License
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
         with:
           persist-credentials: false
+      - name: Determine year
+        id: year
+        run: echo "::set-output name=value::$(date +%Y)"
       - name: Update license
-        run: |
-          sed -i -E "s/^(Copyright.*)[0-9]{4}(.*)$/\1$(date +%Y)\2/" LICENSE
+        run: sed -i -E "s/$REGEX/\1${{steps.year.outputs.value}}\2/" LICENSE
       - name: Check for changes
         id: changes
         run: |
@@ -38,3 +43,4 @@ jobs:
           GITHUB_TOKEN: ${{secrets.UPDATE_LICENSE_TOKEN}}
           COMMIT_USERNAME: github-actions[bot]
           COMMIT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          YEAR: ${{steps.year.outputs.value}}
