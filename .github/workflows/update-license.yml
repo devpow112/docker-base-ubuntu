@@ -34,7 +34,7 @@ jobs:
           git config user.name $COMMIT_USERNAME
           git config user.email $COMMIT_EMAIL
           git add LICENSE
-          git commit -m "Update license year to $(date +%Y)"
+          git commit -m "Update license year to $YEAR"
           CREDENTIALS="x-access-token:$GITHUB_TOKEN"
           URL="https://$CREDENTIALS@github.com/${{github.repository}}.git"
           git remote set-url origin $URL
