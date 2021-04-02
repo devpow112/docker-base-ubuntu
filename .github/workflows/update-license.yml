@@ -27,7 +27,7 @@ jobs:
       - name: Check for changes
         id: changes
         run: |
-          git diff --exit-code LICENSE || echo "::set-output name=exist::true"
+          git diff --exit-code LICENSE || echo '::set-output name=exist::true'
       - name: Push commit
         if: steps.changes.outputs.exist
         run: |
