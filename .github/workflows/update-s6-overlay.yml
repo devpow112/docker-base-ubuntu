@@ -7,6 +7,8 @@ on:
       - .github/workflows/update-s6-overlay.yml
   schedule:
     - cron: '0 15 * * *'
+permissions:
+  contents: write
 jobs:
   update-s6-overlay:
     name: Update S6 Overlay
