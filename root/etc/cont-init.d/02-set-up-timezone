@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bash
 
-if [ -e /.02-setup-timezone-complete ]; then
+if [ -e /.02-set-up-timezone-complete ]; then
   exit 0
 fi
 
@@ -8,7 +8,7 @@ if [[ $TZ ]]; then
   find_result=$(find /usr/share/zoneinfo/ -path /usr/share/zoneinfo/$TZ)
 
   if [[ $find_result == "/usr/share/zoneinfo/$TZ" ]]; then
-    compare_result=$(cmp --silent /etc/localtime /usr/share/zoneinfo/$TZ; echo $?)
+    compare_result=$(cmp -s /etc/localtime /usr/share/zoneinfo/$TZ; echo $?)
 
     if (( $compare_result != 0 )); then
       echo "Modifying timezone ($TZ) ..."
@@ -22,4 +22,4 @@ if [[ $TZ ]]; then
   fi
 fi
 
-touch /.02-setup-timezone-complete
+touch /.02-set-up-timezone-complete

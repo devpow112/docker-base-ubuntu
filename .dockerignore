@@ -1,6 +1,7 @@
 .git/
 .github/
 .dockerignore
+.editorconfig
 .gitattributes
 .gitignore
 Dockerfile
