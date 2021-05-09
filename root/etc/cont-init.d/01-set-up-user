@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bash
 
-if [ -e /.01-setup-user-complete ]; then
+if [ -e /.01-set-up-user-complete ]; then
   exit 0
 fi
 
@@ -50,4 +50,4 @@ if [[ $SGID ]]; then
   fi
 fi
 
-touch /.01-setup-user-complete
+touch /.01-set-up-user-complete
