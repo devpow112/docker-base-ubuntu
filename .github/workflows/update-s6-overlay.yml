@@ -1,10 +1,8 @@
 name: Update S6 Overlay
 on:
   push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/update-s6-overlay.yml
+    branches: main
+    paths: .github/workflows/update-s6-overlay.yml
   schedule:
     - cron: '0 15 * * *'
 permissions:
