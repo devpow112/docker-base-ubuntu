@@ -1,10 +1,8 @@
 name: Update License
 on:
   push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/update-license.yml
+    branches: main
+    paths: .github/workflows/update-license.yml
   schedule:
     - cron: '0 0 1 1 *'
 permissions:
