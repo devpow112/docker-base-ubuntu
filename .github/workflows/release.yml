@@ -27,6 +27,11 @@ jobs:
       CACHE_FROM: type=local,src=/tmp/.buildx-cache
       CACHE_TO: type=local,mode=max,dest=/tmp/.buildx-cache
     steps:
+      - name: Generate tags
+        run: |
+          TAGS="$PACKAGE:latest"
+          TAGS="$PACKAGE:focal-$(date +%Y%m%d),$TAGS"
+          echo "TAGS=$TAGS" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v2.3.4
       - name: Set up QEMU
