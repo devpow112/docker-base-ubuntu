@@ -21,14 +21,15 @@ jobs:
       PACKAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
       PACKAGE_TEMP: localhost:5000/${{github.repository_owner}}/base-ubuntu
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
+      CACHE_FROM: type=local,src=/tmp/.buildx-cache
+      CACHE_TO: type=local,mode=max,dest=/tmp/.buildx-cache
     steps:
-      - name: Gather info
-        id: info
+      - name: Generate tags
         run: |
           TAGS="$PACKAGE:latest"
           TAGS="$PACKAGE:focal-$(date +%Y%m%d),$TAGS"
-          echo "::set-output name=tags::$TAGS"
-      - name: Checkout code
+          echo "TAGS=$TAGS" >> $GITHUB_ENV
+      - name: Checkout
         uses: actions/checkout@v2.3.4
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1.1.0
@@ -54,8 +55,8 @@ jobs:
           context: .
           platforms: ${{env.PLATFORMS}}
           tags: ${{env.PACKAGE_TEMP}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
+          cache-from: ${{env.CACHE_FROM}}
+          cache-to: ${{env.CACHE_TO}}
           push: true
       - name: Check digests
         id: digests
@@ -64,11 +65,13 @@ jobs:
             docker buildx imagetools inspect $PACKAGE_TEMP |
             grep Digest | cut -c9-
           )
-          DIGEST_CURRENT=$(
+          DIGEST_LATEST=$(
             docker buildx imagetools inspect $PACKAGE |
             grep Digest | cut -c9-
           )
-          [ "$DIGEST" = "$DIGEST_CURRENT" ] ||
+          echo "Digest (new): $DIGEST"
+          echo "Digest (latest): $DIGEST_LATEST"
+          [ "$DIGEST" = "$DIGEST_LATEST" ] ||
           echo '::set-output name=changed::true'
       - name: Login to registry
         if: github.ref == 'refs/heads/main' && steps.digests.outputs.changed
@@ -84,7 +87,7 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           context: .
           platforms: ${{env.PLATFORMS}}
-          tags: ${{steps.info.outputs.tags}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
+          tags: ${{env.TAGS}}
+          cache-from: ${{env.CACHE_FROM}}
+          cache-to: ${{env.CACHE_TO}}
           push: true
