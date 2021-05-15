@@ -20,7 +20,7 @@ jobs:
       - name: Determine year
         id: year
         run: echo "::set-output name=value::$(date +%Y)"
-      - name: Update license
+      - name: Update LICENSE
         run: sed -i -E "s/$REGEX/\1${{steps.year.outputs.value}}\2/" LICENSE
         env:
           REGEX: '^(Copyright \(c\) )[0-9]{4}( Devon Powell)$'
