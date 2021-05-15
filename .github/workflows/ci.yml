@@ -48,6 +48,7 @@ jobs:
         id: build
         with:
           builder: ${{steps.buildx.outputs.name}}
+          context: .
           platforms: ${{env.PLATFORMS}}
           cache-from: ${{env.CACHE_FROM}}
           cache-to: ${{env.CACHE_TO}}
