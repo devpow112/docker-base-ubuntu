@@ -61,8 +61,8 @@ jobs:
           cache-from: ${{env.CACHE_FROM}}
           cache-to: ${{env.CACHE_TO}}
           push: true
-      - name: Check digests
-        id: digests
+      - name: Determine release
+        id: release
         run: |
           DIGEST=$(
             docker buildx imagetools inspect $PACKAGE_TEMP |
@@ -74,17 +74,34 @@ jobs:
           )
           echo "Digest (new):    $DIGEST"
           echo "Digest (latest): $DIGEST_LATEST"
-          [ "$DIGEST" = "$DIGEST_LATEST" ] ||
-          echo '::set-output name=changed::true'
+          if [ "$DIGEST" != "$DIGEST_LATEST" ]; then
+            DATE=$(date +%Y%m%d)
+            TAG_PREFIX="focal-$DATE"
+            EXPRESSION="[.[].tag_name|select(startswith(\"$TAG_PREFIX\"))]"
+            EXPRESSION="$EXPRESSION|max//\"\"|split(\".\")[1]//\"-1\""
+            URL=https://api.github.com/repos/${{github.repository}}/releases
+            BUILD_NUMBER=$(curl -sSL $URL | jq -r $EXPRESSION)
+            BUILD_NUMBER=$((BUILD_NUMBER + 1))
+            echo '::set-output name=create::true'
+            echo "::set-output name=name::$TAG_PREFIX.$BUILD_NUMBER"
+          fi
+      - name: Create release
+        if: steps.release.outputs.create
+        uses: ncipollo/release-action@v1.8.5
+        with:
+          tag: ${{steps.release.outputs.name}}
+          token: ${{secrets.RELEASE_TOKEN}}
+          allowUpdates: true
+          commit: main
       - name: Login to registry
-        if: steps.digests.outputs.changed
+        if: steps.release.outputs.create
         uses: docker/login-action@v1.9.0
         with:
           registry: ghcr.io
           username: ${{github.actor}}
           password: ${{github.token}}
       - name: Push image
-        if: steps.digests.outputs.changed
+        if: steps.release.outputs.create
         uses: docker/build-push-action@v2.4.0
         with:
           builder: ${{steps.buildx.outputs.name}}
