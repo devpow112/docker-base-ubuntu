@@ -4,6 +4,7 @@
 .editorconfig
 .gitattributes
 .gitignore
+.hadolint.yml
 Dockerfile
 LICENSE
 README.md
