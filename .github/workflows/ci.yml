@@ -6,11 +6,11 @@ on:
     branches: main
 permissions:
   contents: read
-  packages: write
 jobs:
   check-formatting-dockerfile:
     name: Check Formatting (Dockerfile)
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     container: hadolint/hadolint:latest-debian
     steps:
       - name: Checkout
@@ -21,25 +21,16 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs:
-      - check-formatting-dockerfile
     services:
       registry:
         image: registry
         ports:
           - 5000:5000
     env:
-      PACKAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
-      PACKAGE_TEMP: localhost:5000/${{github.repository_owner}}/base-ubuntu
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
       CACHE_FROM: type=local,src=/tmp/.buildx-cache
       CACHE_TO: type=local,mode=max,dest=/tmp/.buildx-cache
     steps:
-      - name: Generate tags
-        run: |
-          TAGS="$PACKAGE:latest"
-          TAGS="$PACKAGE:focal-$(date +%Y%m%d),$TAGS"
-          echo "TAGS=$TAGS" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v2.3.4
       - name: Set up QEMU
@@ -65,40 +56,6 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           context: .
           platforms: ${{env.PLATFORMS}}
-          tags: ${{env.PACKAGE_TEMP}}
           cache-from: ${{env.CACHE_FROM}}
           cache-to: ${{env.CACHE_TO}}
-          push: true
-      - name: Check digests
-        id: digests
-        run: |
-          DIGEST=$(
-            docker buildx imagetools inspect $PACKAGE_TEMP |
-            grep Digest | cut -c12-
-          )
-          DIGEST_LATEST=$(
-            docker buildx imagetools inspect $PACKAGE |
-            grep Digest | cut -c12-
-          )
-          echo "Digest (new):    $DIGEST"
-          echo "Digest (latest): $DIGEST_LATEST"
-          [ "$DIGEST" = "$DIGEST_LATEST" ] ||
-          echo '::set-output name=changed::true'
-      - name: Login to registry
-        if: github.ref == 'refs/heads/main' && steps.digests.outputs.changed
-        uses: docker/login-action@v1.9.0
-        with:
-          registry: ghcr.io
-          username: ${{github.actor}}
-          password: ${{github.token}}
-      - name: Push image
-        if: github.ref == 'refs/heads/main' && steps.digests.outputs.changed
-        uses: docker/build-push-action@v2.4.0
-        with:
-          builder: ${{steps.buildx.outputs.name}}
-          context: .
-          platforms: ${{env.PLATFORMS}}
-          tags: ${{env.TAGS}}
-          cache-from: ${{env.CACHE_FROM}}
-          cache-to: ${{env.CACHE_TO}}
-          push: true
+          push: false
