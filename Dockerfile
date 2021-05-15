@@ -5,6 +5,9 @@ ARG TARGETPLATFORM
 ARG PLATFORM_TRANSFORM="s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/"
 ARG S6_OVERLAY_VERSION="2.2.0.3"
 
+# set default shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # download s6 overlay archive
 RUN export DEBIAN_FRONTEND='noninteractive' && \
     apt-get update && \
@@ -14,7 +17,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     ARCH=$(echo ${TARGETPLATFORM} | sed "${PLATFORM_TRANSFORM}") && \
     URL='https://github.com/just-containers/s6-overlay/releases/download/' && \
     URL="${URL}v${S6_OVERLAY_VERSION}/s6-overlay-${ARCH}-installer" && \
-    curl -sSfo /tmp/s6-overlay-installer -L ${URL} && \
+    curl -sSfo /tmp/s6-overlay-installer -L "${URL}" && \
     chmod u+x /tmp/s6-overlay-installer
 
 FROM ubuntu:focal-20210416
