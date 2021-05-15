@@ -63,13 +63,13 @@ jobs:
         run: |
           DIGEST=$(
             docker buildx imagetools inspect $PACKAGE_TEMP |
-            grep Digest | cut -c9-
+            grep Digest | cut -c12-
           )
           DIGEST_LATEST=$(
             docker buildx imagetools inspect $PACKAGE |
-            grep Digest | cut -c9-
+            grep Digest | cut -c12-
           )
-          echo "Digest (new): $DIGEST"
+          echo "Digest (new):    $DIGEST"
           echo "Digest (latest): $DIGEST_LATEST"
           [ "$DIGEST" = "$DIGEST_LATEST" ] ||
           echo '::set-output name=changed::true'
