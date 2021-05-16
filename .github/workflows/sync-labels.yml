@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   issues: write
+concurrency: sync-labels
 jobs:
   sync-labels:
     name: Sync Labels
