@@ -26,12 +26,8 @@ jobs:
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
       CACHE_FROM: type=local,src=/tmp/.buildx-cache
       CACHE_TO: type=local,mode=max,dest=/tmp/.buildx-cache
+      STREAM: focal
     steps:
-      - name: Generate tags
-        run: |
-          TAGS="$PACKAGE:latest"
-          TAGS="$PACKAGE:focal-$(date +%Y%m%d),$TAGS"
-          echo "TAGS=$TAGS" >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v2.3.4
       - name: Set up QEMU
@@ -61,8 +57,8 @@ jobs:
           cache-from: ${{env.CACHE_FROM}}
           cache-to: ${{env.CACHE_TO}}
           push: true
-      - name: Determine release
-        id: release
+      - name: Determine info
+        id: info
         run: |
           DIGEST=$(
             docker buildx imagetools inspect $PACKAGE_TEMP |
@@ -76,38 +72,45 @@ jobs:
           echo "Digest (latest): $DIGEST_LATEST"
           if [ "$DIGEST" != "$DIGEST_LATEST" ]; then
             DATE=$(date +%Y%m%d)
-            TAG_PREFIX="focal-$DATE"
+            TAG_PREFIX="$STREAM-$DATE"
             EXPRESSION="[.[].tag_name|select(startswith(\"$TAG_PREFIX\"))]"
             EXPRESSION="$EXPRESSION|max//\"\"|split(\".\")[1]//\"-1\""
             URL=https://api.github.com/repos/${{github.repository}}/releases
             BUILD_NUMBER=$(curl -sSL $URL | jq -r $EXPRESSION)
             BUILD_NUMBER=$((BUILD_NUMBER + 1))
-            echo '::set-output name=create::true'
-            echo "::set-output name=name::$TAG_PREFIX.$BUILD_NUMBER"
+            RELEASE_TAG="$TAG_PREFIX.$BUILD_NUMBER"
+            RELEASE_NAME="$STREAM ($DATE.$BUILD_NUMBER)"
+            DOCKER_TAGS="$PACKAGE:latest"
+            DOCKER_TAGS="$PACKAGE:$RELEASE_TAG,$DOCKER_TAGS"
+            echo '::set-output name=create-release::true'
+            echo "::set-output name=release-name::$RELEASE_NAME"
+            echo "::set-output name=release-tag::$RELEASE_TAG"
+            echo "::set-output name=docker-tags::$DOCKER_TAGS"
           fi
       - name: Create release
-        if: steps.release.outputs.create
+        if: steps.info.outputs.create-release
         uses: ncipollo/release-action@v1.8.5
         with:
-          tag: ${{steps.release.outputs.name}}
+          tag: ${{steps.info.outputs.release-tag}}
+          name: ${{steps.info.outputs.release-name}}
           token: ${{secrets.RELEASE_TOKEN}}
           allowUpdates: true
           commit: main
       - name: Login to registry
-        if: steps.release.outputs.create
+        if: steps.info.outputs.create-release
         uses: docker/login-action@v1.9.0
         with:
           registry: ghcr.io
           username: ${{github.actor}}
           password: ${{github.token}}
       - name: Push image
-        if: steps.release.outputs.create
+        if: steps.info.outputs.create-release
         uses: docker/build-push-action@v2.4.0
         with:
           builder: ${{steps.buildx.outputs.name}}
           context: .
           platforms: ${{env.PLATFORMS}}
-          tags: ${{env.TAGS}}
+          tags: ${{steps.info.outputs.docker-tags}}
           cache-from: ${{env.CACHE_FROM}}
           cache-to: ${{env.CACHE_TO}}
           push: true
