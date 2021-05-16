@@ -83,7 +83,7 @@ jobs:
             RELEASE_TAG="$TAG_PREFIX.$BUILD_NUMBER"
             RELEASE_NAME="$STREAM ($DATE.$BUILD_NUMBER)"
             DOCKER_TAGS="$PACKAGE:latest"
-            DOCKER_TAGS="$PACKAGE:$RELEASE_TAG,$DOCKER_TAGS"
+            DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$RELEASE_TAG"
             echo '::set-output name=create-release::true'
             echo "::set-output name=release-name::$RELEASE_NAME"
             echo "::set-output name=release-tag::$RELEASE_TAG"
