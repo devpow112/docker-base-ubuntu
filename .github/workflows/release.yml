@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   packages: write
+concurrency: release
 jobs:
   build:
     name: Release
@@ -71,8 +72,9 @@ jobs:
           echo "Digest (new):    $DIGEST"
           echo "Digest (latest): $DIGEST_LATEST"
           if [ "$DIGEST" != "$DIGEST_LATEST" ]; then
-            DATE=$(date +%Y%m%d)
-            TAG_PREFIX="$STREAM-$DATE"
+            DATE=$(date +%Y-%m-%d)
+            DATE_SANITIZED=${DATE//-/}
+            TAG_PREFIX="$STREAM-$DATE_SANITIZED"
             EXPRESSION="[.[].tag_name|select(startswith(\"$TAG_PREFIX\"))]"
             EXPRESSION="$EXPRESSION|max//\"\"|split(\".\")[1]//\"-1\""
             URL=https://api.github.com/repos/${{github.repository}}/releases
