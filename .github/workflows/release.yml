@@ -77,7 +77,8 @@ jobs:
             EXPRESSION="[.[].tag_name|select(startswith(\"$TAG_PREFIX\"))]"
             EXPRESSION="$EXPRESSION|max//\"\"|split(\".\")[1]//\"-1\""
             URL=https://api.github.com/repos/${{github.repository}}/releases
-            BUILD_NUMBER=$(curl -sSL $URL | jq -r $EXPRESSION)
+            CREDS='${{github.repository_owner}}:${{secrets.RELEASE_TOKEN}}'
+            BUILD_NUMBER=$(curl -u $CREDS -sSL $URL | jq -r $EXPRESSION)
             BUILD_NUMBER=$((BUILD_NUMBER + 1))
             RELEASE_TAG="$TAG_PREFIX.$BUILD_NUMBER"
             DOCKER_TAGS="$PACKAGE:latest"
