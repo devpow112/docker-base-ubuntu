@@ -72,20 +72,17 @@ jobs:
           echo "Digest (new):    $DIGEST"
           echo "Digest (latest): $DIGEST_LATEST"
           if [ "$DIGEST" != "$DIGEST_LATEST" ]; then
-            DATE=$(date +%Y-%m-%d)
-            DATE_SANITIZED=${DATE//-/}
-            TAG_PREFIX="$STREAM-$DATE_SANITIZED"
+            DATE=$(date +%Y%m%d)
+            TAG_PREFIX="$STREAM-$DATE"
             EXPRESSION="[.[].tag_name|select(startswith(\"$TAG_PREFIX\"))]"
             EXPRESSION="$EXPRESSION|max//\"\"|split(\".\")[1]//\"-1\""
             URL=https://api.github.com/repos/${{github.repository}}/releases
             BUILD_NUMBER=$(curl -sSL $URL | jq -r $EXPRESSION)
             BUILD_NUMBER=$((BUILD_NUMBER + 1))
             RELEASE_TAG="$TAG_PREFIX.$BUILD_NUMBER"
-            RELEASE_NAME="$STREAM ($DATE.$BUILD_NUMBER)"
             DOCKER_TAGS="$PACKAGE:latest"
             DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$RELEASE_TAG"
             echo '::set-output name=create-release::true'
-            echo "::set-output name=release-name::$RELEASE_NAME"
             echo "::set-output name=release-tag::$RELEASE_TAG"
             echo "::set-output name=docker-tags::$DOCKER_TAGS"
           fi
@@ -94,7 +91,6 @@ jobs:
         uses: ncipollo/release-action@v1.8.5
         with:
           tag: ${{steps.info.outputs.release-tag}}
-          name: ${{steps.info.outputs.release-name}}
           token: ${{secrets.RELEASE_TOKEN}}
           allowUpdates: true
           commit: main
