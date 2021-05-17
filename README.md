@@ -4,14 +4,20 @@
 [![CI][CI Badge]][CI Workflow]
 [![Release][Release Badge]][Release Workflow]
 
-**NOT INTENDED FOR PUBLIC USE**
-
-Ubuntu docker container with extras for use as base for other docker containers.
+Ubuntu docker container for use as base for other containers.
 
 ## Building
 
 ```bash
 docker build -t base-ubuntu -f Dockerfile docker-base-ubuntu
+```
+
+## Usage
+
+```dockerfile
+FROM ghcr.io/devpow112/base-ubuntu
+
+...
 ```
 
 <!-- links -->
