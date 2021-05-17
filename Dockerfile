@@ -76,5 +76,7 @@ ENTRYPOINT ["/init"]
 LABEL maintainer devpow112
 LABEL org.opencontainers.image.licenses MIT
 LABEL org.opencontainers.image.title "Docker Ubuntu (Base)"
+LABEL org.opencontainers.image.description \
+      "Ubuntu docker container for use as base for other containers."
 LABEL org.opencontainers.image.source \
       https://github.com/devpow112/docker-base-ubuntu
