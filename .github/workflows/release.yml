@@ -27,7 +27,6 @@ jobs:
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
       CACHE_FROM: type=local,src=/tmp/.buildx-cache
       CACHE_TO: type=local,mode=max,dest=/tmp/.buildx-cache
-      STREAM: focal
     steps:
       - name: Checkout
         uses: actions/checkout@v2.3.4
@@ -75,6 +74,10 @@ jobs:
             exit 0;
           fi
           DATE=$(date +%Y%m%d)
+          STREAM=$(
+            grep -E "^FROM ubuntu:[a-z]+-[0-9]+$" Dockerfile |
+            cut -d: -f2 | cut -d- -f1
+          )
           TAG_PREFIX="$STREAM-$DATE"
           EXPRESSION="[.[].tag_name|select(startswith(\"$TAG_PREFIX\"))]"
           EXPRESSION="$EXPRESSION|max//\"\"|split(\".\")[1]//\"-1\""
