@@ -102,6 +102,11 @@ jobs:
           FORMAT_URL='https://github.com/${{github.repository}}/commits/%H'
           FORMAT="* %s ([%h]($FORMAT_URL))"
           RELEASE_BODY=$(git log $COMMIT_RANGE --pretty=format:"$FORMAT" | sort)
+          echo -e 'Create release: true'
+          echo -e "Tag (Git): $RELEASE_TAG"
+          echo -e "Tags (Docker): $DOCKER_TAGS"
+          echo -e "Commit: $RELEASE_COMMIT"
+          echo -e "Body:\n$RELEASE_BODY"
           RELEASE_BODY="${RELEASE_BODY//'%'/'%25'}"
           RELEASE_BODY="${RELEASE_BODY//$'\n'/'%0A'}"
           RELEASE_BODY="${RELEASE_BODY//$'\r'/'%0D'}"
@@ -116,7 +121,8 @@ jobs:
         with:
           tag: ${{steps.info.outputs.release-tag}}
           commit: ${{steps.info.outputs.release-commit}}
-          body: ${{steps.info.outputs.release-body}}
+          body: |
+            ${{steps.info.outputs.release-body}}
           token: ${{secrets.RELEASE_TOKEN}}
       - name: Login to registry
         if: steps.info.outputs.create-release
