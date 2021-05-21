@@ -87,7 +87,7 @@ jobs:
           BUILD_NUMBER=$((BUILD_NUMBER + 1))
           RELEASE_TAG="$TAG_PREFIX.$BUILD_NUMBER"
           DOCKER_TAGS="$PACKAGE:latest"
-          RELEASE_COMMIT=$(echo ${GITHUB_REF#refs/heads/})
+          RELEASE_COMMIT=$(echo ${GITHUB_REF#refs/head/})
           DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$RELEASE_TAG"
           echo '::set-output name=create-release::true'
           echo "::set-output name=release-tag::$RELEASE_TAG"
