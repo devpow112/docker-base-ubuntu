@@ -69,32 +69,34 @@ jobs:
             docker buildx imagetools inspect $PACKAGE |
             grep Digest | cut -c12-
           )
-          echo "Digest (new):    $DIGEST"
-          echo "Digest (latest): $DIGEST_LATEST"
-          if [ "$DIGEST" != "$DIGEST_LATEST" ]; then
-            DATE=$(date +%Y%m%d)
-            TAG_PREFIX="$STREAM-$DATE"
-            EXPRESSION="[.[].tag_name|select(startswith(\"$TAG_PREFIX\"))]"
-            EXPRESSION="$EXPRESSION|max//\"\"|split(\".\")[1]//\"-1\""
-            URL=https://api.github.com/repos/${{github.repository}}/releases
-            CREDS='${{github.repository_owner}}:${{secrets.RELEASE_TOKEN}}'
-            BUILD_NUMBER=$(curl -u $CREDS -sSL $URL | jq -r $EXPRESSION)
-            BUILD_NUMBER=$((BUILD_NUMBER + 1))
-            RELEASE_TAG="$TAG_PREFIX.$BUILD_NUMBER"
-            DOCKER_TAGS="$PACKAGE:latest"
-            DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$RELEASE_TAG"
-            echo '::set-output name=create-release::true'
-            echo "::set-output name=release-tag::$RELEASE_TAG"
-            echo "::set-output name=docker-tags::$DOCKER_TAGS"
+          echo "Digest (new): $DIGEST"
+          echo "Digest (old): $DIGEST_LATEST"
+          if [ "$DIGEST" == "$DIGEST_LATEST" ]; then
+            exit 0;
           fi
+          DATE=$(date +%Y%m%d)
+          TAG_PREFIX="$STREAM-$DATE"
+          EXPRESSION="[.[].tag_name|select(startswith(\"$TAG_PREFIX\"))]"
+          EXPRESSION="$EXPRESSION|max//\"\"|split(\".\")[1]//\"-1\""
+          URL=https://api.github.com/repos/${{github.repository}}/releases
+          CREDENTIALS='${{github.repository_owner}}:${{secrets.RELEASE_TOKEN}}'
+          BUILD_NUMBER=$(curl -u $CREDENTIALS -sSL $URL | jq -r $EXPRESSION)
+          BUILD_NUMBER=$((BUILD_NUMBER + 1))
+          RELEASE_TAG="$TAG_PREFIX.$BUILD_NUMBER"
+          DOCKER_TAGS="$PACKAGE:latest"
+          RELEASE_COMMIT=$(echo ${GITHUB_REF#refs/heads/})
+          DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$RELEASE_TAG"
+          echo '::set-output name=create-release::true'
+          echo "::set-output name=release-tag::$RELEASE_TAG"
+          echo "::set-output name=release-commit::$RELEASE_COMMIT"
+          echo "::set-output name=docker-tags::$DOCKER_TAGS"
       - name: Create release
         if: steps.info.outputs.create-release
         uses: ncipollo/release-action@v1.8.5
         with:
           tag: ${{steps.info.outputs.release-tag}}
+          commit: ${{steps.info.outputs.release-commit}}
           token: ${{secrets.RELEASE_TOKEN}}
-          allowUpdates: true
-          commit: main
       - name: Login to registry
         if: steps.info.outputs.create-release
         uses: docker/login-action@v1.9.0
