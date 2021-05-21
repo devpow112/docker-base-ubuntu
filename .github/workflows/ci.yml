@@ -25,6 +25,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.4
       - name: Check formatting
+        shell: bash
         run: find . -type f -iname '*.md' -print0 | xargs -0 markdownlint
   build:
     name: Build

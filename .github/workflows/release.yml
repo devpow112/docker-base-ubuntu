@@ -61,6 +61,7 @@ jobs:
           push: true
       - name: Determine info
         id: info
+        shell: bash
         run: |
           DIGEST=$(
             docker buildx imagetools inspect $PACKAGE_TEMP |
@@ -122,9 +123,8 @@ jobs:
         uses: ncipollo/release-action@v1.8.5
         with:
           tag: ${{steps.info.outputs.release-tag}}
+          body: ${{steps.info.outputs.release-body}}
           commit: ${{steps.info.outputs.release-commit}}
-          body: |
-            ${{steps.info.outputs.release-body}}
           token: ${{secrets.RELEASE_TOKEN}}
       - name: Login to registry
         if: steps.info.outputs.create-release
