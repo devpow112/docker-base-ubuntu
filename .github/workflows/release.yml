@@ -71,27 +71,44 @@ jobs:
           echo "Digest (new): $DIGEST"
           echo "Digest (old): $DIGEST_LATEST"
           if [ "$DIGEST" == "$DIGEST_LATEST" ]; then
-            exit 0;
+            exit 0
           fi
           DATE=$(date +%Y%m%d)
           STREAM=$(
             grep -E "^FROM ubuntu:[a-z]+-[0-9]+$" Dockerfile |
             cut -d: -f2 | cut -d- -f1
           )
+          URL=https://api.github.com/repos/${{github.repository}}/releases
+          RELEASES=$(curl -sSL $URL)
           TAG_PREFIX="$STREAM-$DATE"
           EXPRESSION="[.[].tag_name|select(startswith(\"$TAG_PREFIX\"))]"
           EXPRESSION="$EXPRESSION|max//\"\"|split(\".\")[1]//\"-1\""
-          URL=https://api.github.com/repos/${{github.repository}}/releases
-          CREDENTIALS='${{github.repository_owner}}:${{secrets.RELEASE_TOKEN}}'
-          BUILD_NUMBER=$(curl -u $CREDENTIALS -sSL $URL | jq -r $EXPRESSION)
+          BUILD_NUMBER=$(echo "$RELEASES" | jq -r $EXPRESSION)
           BUILD_NUMBER=$((BUILD_NUMBER + 1))
           RELEASE_TAG="$TAG_PREFIX.$BUILD_NUMBER"
           DOCKER_TAGS="$PACKAGE:latest"
-          RELEASE_COMMIT=$(echo ${GITHUB_REF#refs/head/})
           DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$RELEASE_TAG"
+          RELEASE_COMMIT=$(echo ${GITHUB_REF#refs/head/})
+          EXPRESSION="[.[]|select(.target_commitish==\"$RELEASE_COMMIT\")"
+          EXPRESSION="$EXPRESSION|{tag_name:.tag_name,created_at:.created_at}]"
+          EXPRESSION="$EXPRESSION|sort_by(.created_at,.tag_name)"
+          EXPRESSION="$EXPRESSION|max|.tag_name//\"\""
+          TAG=$(echo "$RELEASES" | jq -r $EXPRESSION)
+          if [ -z $TAG ]; then
+            COMMIT_RANGE='origin/main...HEAD'
+          else
+            COMMIT_RANGE="$TAG...HEAD"
+          fi
+          FORMAT_URL='https://github.com/${{github.repository}}/commits/%H'
+          FORMAT="* %s ([%h]($FORMAT_URL))"
+          RELEASE_BODY=$(git log $COMMIT_RANGE --pretty=format:"$FORMAT" | sort)
+          RELEASE_BODY="${RELEASE_BODY//'%'/'%25'}"
+          RELEASE_BODY="${RELEASE_BODY//$'\n'/'%0A'}"
+          RELEASE_BODY="${RELEASE_BODY//$'\r'/'%0D'}"
           echo '::set-output name=create-release::true'
           echo "::set-output name=release-tag::$RELEASE_TAG"
           echo "::set-output name=release-commit::$RELEASE_COMMIT"
+          echo "::set-output name=release-body::$RELEASE_BODY"
           echo "::set-output name=docker-tags::$DOCKER_TAGS"
       - name: Create release
         if: steps.info.outputs.create-release
@@ -99,6 +116,7 @@ jobs:
         with:
           tag: ${{steps.info.outputs.release-tag}}
           commit: ${{steps.info.outputs.release-commit}}
+          body: ${{steps.info.outputs.release-body}}
           token: ${{secrets.RELEASE_TOKEN}}
       - name: Login to registry
         if: steps.info.outputs.create-release
