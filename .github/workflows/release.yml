@@ -102,7 +102,7 @@ jobs:
             COMMIT_RANGE="$TAG...HEAD"
           fi
           FORMAT_URL='https://github.com/${{github.repository}}/commits/%H'
-          FORMAT="* %s ([%h]($FORMAT_URL))"
+          FORMAT="* %s ([\`%h\`]($FORMAT_URL))"
           RELEASE_BODY=$(git log $COMMIT_RANGE --pretty=format:"$FORMAT" | sort)
           echo -e 'Create release: true'
           echo -e "Tag (Git): $RELEASE_TAG"
