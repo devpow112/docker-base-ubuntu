@@ -47,7 +47,7 @@ FROM ghcr.io/devpow112/base-ubuntu:latest
 
 ### Interactive
 
-Not recommended but will work is you need a quick ubuntu environment to do
+Not recommended but will work if you need a quick Ubuntu environment to do
 testing with.
 
 ```sh
