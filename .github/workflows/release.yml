@@ -71,9 +71,10 @@ jobs:
             docker buildx imagetools inspect $PACKAGE |
             grep Digest | cut -c12-
           )
-          echo "Digest (new): $DIGEST"
-          echo "Digest (old): $DIGEST_LATEST"
+          echo "Digest New (Docker): $DIGEST"
+          echo "Digest Old (Docker): $DIGEST_LATEST"
           if [ "$DIGEST" == "$DIGEST_LATEST" ]; then
+            echo 'Create Release (GitHub): false'
             exit 0
           fi
           DATE=$(date +%Y%m%d)
@@ -105,11 +106,19 @@ jobs:
           FORMAT_URL='https://github.com/${{github.repository}}/commit/%H'
           FORMAT="* %s ([\`%h\`]($FORMAT_URL))"
           RELEASE_BODY=$(git log $COMMIT_RANGE --pretty=format:"$FORMAT" | sort)
-          echo -e 'Create release: true'
-          echo -e "Tag (Git): $RELEASE_TAG"
-          echo -e "Tags (Docker): $DOCKER_TAGS"
-          echo -e "Commit: $RELEASE_COMMIT"
-          echo -e "Body:\n$RELEASE_BODY"
+          echo "Tag (Git): $RELEASE_TAG"
+          echo "Previous Tag (Git): $TAG"
+          echo "Commit Range (Git): $COMMIT_RANGE"
+          echo "Commitish (GitHub): $RELEASE_COMMIT"
+          echo 'Commit (Git): ${{github.sha}}'
+          echo "Tags (Docker): $DOCKER_TAGS"
+          echo -e "Release Notes (GitHub):\n$RELEASE_BODY"
+          if [ -z $RELEASE_BODY ]; then
+            echo 'Uh oh...😧 something went wrong when determining release info'
+            echo 'The digest changed but no changes were found 😕'
+            exit 1
+          fi
+          echo 'Create Release (GitHub): true'
           RELEASE_BODY="${RELEASE_BODY//'%'/'%25'}"
           RELEASE_BODY="${RELEASE_BODY//$'\n'/'%0A'}"
           RELEASE_BODY="${RELEASE_BODY//$'\r'/'%0D'}"
