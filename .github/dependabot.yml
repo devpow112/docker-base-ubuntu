@@ -8,6 +8,7 @@ updates:
     labels:
       - auto
       - dependencies
+      - github-actions
     reviewers:
       - devpow112
   - package-ecosystem: docker
@@ -18,5 +19,6 @@ updates:
     labels:
       - auto
       - dependencies
+      - docker
     reviewers:
       - devpow112
