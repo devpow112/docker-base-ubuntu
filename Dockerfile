@@ -7,7 +7,7 @@ ARG LANGUAGE="en_US"
 ARG ENCODING="UTF-8"
 
 # set default shell
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+SHELL ["/bin/sh", "-o", "pipefail", "-c"]
 
 # set environment variables
 ENV HOME="/root" \
