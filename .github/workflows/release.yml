@@ -63,7 +63,6 @@ jobs:
         id: info
         shell: bash
         run: |
-          set +e
           DIGEST=$(
             docker buildx imagetools inspect $PACKAGE_TEMP |
             grep Digest | cut -c12-
@@ -72,7 +71,6 @@ jobs:
             docker buildx imagetools inspect $PACKAGE |
             grep Digest | cut -c12-
           )
-          set -e
           if [ ! -z $DIGEST ] && [ ! -z $DIGEST_LATEST ]; then
             echo "Digest (new): $DIGEST"
             echo "Digest (old): $DIGEST_LATEST"
@@ -106,7 +104,7 @@ jobs:
           else
             COMMIT_RANGE="$TAG...HEAD"
           fi
-          FORMAT_URL='https://github.com/${{github.repository}}/commit/%h'
+          FORMAT_URL='https://github.com/${{github.repository}}/commit/%H'
           FORMAT="* %s ([\`%h\`]($FORMAT_URL))"
           RELEASE_BODY=$(git log $COMMIT_RANGE --pretty=format:"$FORMAT" | sort)
           echo -e 'Create release: true'
