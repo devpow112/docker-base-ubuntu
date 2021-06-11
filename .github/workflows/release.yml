@@ -71,12 +71,10 @@ jobs:
             docker buildx imagetools inspect $PACKAGE |
             grep Digest | cut -c12-
           )
-          if [ ! -z $DIGEST ] && [ ! -z $DIGEST_LATEST ]; then
-            echo "Digest (new): $DIGEST"
-            echo "Digest (old): $DIGEST_LATEST"
-            if [ "$DIGEST" == "$DIGEST_LATEST" ]; then
-              exit 0
-            fi
+          echo "Digest (new): $DIGEST"
+          echo "Digest (old): $DIGEST_LATEST"
+          if [ "$DIGEST" == "$DIGEST_LATEST" ]; then
+            exit 0
           fi
           DATE=$(date +%Y%m%d)
           STREAM=$(
