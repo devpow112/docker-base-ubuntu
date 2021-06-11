@@ -14,7 +14,7 @@ docker build -t base-ubuntu -f Dockerfile \
   --build-arg "LANGUAGE=..." \
   --build-arg "ENCODING=..." \
   --build-arg "S6_OVERLAY_VERSION=..." \
-  docker-base-ubuntu
+  base-ubuntu
 ```
 
 ### Arguments
