@@ -98,7 +98,7 @@ jobs:
           EXPRESSION="$EXPRESSION|sort_by(.created_at,.tag_name)"
           EXPRESSION="$EXPRESSION|max|.tag_name//\"\""
           TAG=$(echo "$RELEASES" | jq -r $EXPRESSION)
-          if [ -z $TAG ]; then
+          if [ -z "$TAG" ]; then
             COMMIT_RANGE='origin/main...HEAD'
           else
             COMMIT_RANGE="$TAG...HEAD"
@@ -113,7 +113,7 @@ jobs:
           echo 'Commit (Git): ${{github.sha}}'
           echo "Tags (Docker): $DOCKER_TAGS"
           echo -e "Release Notes (GitHub):\n$RELEASE_BODY"
-          if [ -z $RELEASE_BODY ]; then
+          if [ -z "$RELEASE_BODY" ]; then
             echo 'Uh oh...😧 something went wrong when determining release info'
             echo 'The digest changed but no changes were found 😕'
             exit 1
