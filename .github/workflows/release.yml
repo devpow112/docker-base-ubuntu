@@ -77,6 +77,7 @@ jobs:
             echo 'Create Release (GitHub): false'
             exit 0
           fi
+          echo 'Create Release (GitHub): true'
           DATE=$(date +%Y%m%d)
           STREAM=$(
             grep -E "^FROM ubuntu:[a-z]+-[0-9]+$" Dockerfile |
@@ -118,7 +119,6 @@ jobs:
             echo 'The digest changed but no changes were found 😕'
             exit 1
           fi
-          echo 'Create Release (GitHub): true'
           RELEASE_BODY="${RELEASE_BODY//'%'/'%25'}"
           RELEASE_BODY="${RELEASE_BODY//$'\n'/'%0A'}"
           RELEASE_BODY="${RELEASE_BODY//$'\r'/'%0D'}"

@@ -1,4 +1,4 @@
-FROM ubuntu:focal-20210416 AS temp
+FROM ubuntu:focal-20210416
 
 # set default input arguments
 ARG TARGETPLATFORM
