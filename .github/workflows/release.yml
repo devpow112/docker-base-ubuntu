@@ -129,7 +129,7 @@ jobs:
           echo "::set-output name=docker-tags::$DOCKER_TAGS"
       - name: Create release
         if: steps.info.outputs.create-release
-        uses: ncipollo/release-action@v1.8.6
+        uses: ncipollo/release-action@v1.8.8
         with:
           tag: ${{steps.info.outputs.release-tag}}
           body: ${{steps.info.outputs.release-body}}
