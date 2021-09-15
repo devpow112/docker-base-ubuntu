@@ -10,6 +10,9 @@
 - name: dependencies
   description: Pull requests that updates a dependency file
   color: 0366d6
+- name: docker
+  description:  Pull requests that updates Docker code
+  color: 21ceff 
 - name: documentation
   description: Improvements or additions to documentation
   color: 0075ca
@@ -37,6 +40,3 @@
 - name: won't fix
   description: This will not be worked on
   color: ffffff
-- name: docker
-  description:
-  color: 21ceff
