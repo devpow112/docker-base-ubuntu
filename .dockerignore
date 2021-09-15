@@ -6,8 +6,8 @@
 .gitattributes
 .gitignore
 .hadolint.yml
+.markdownlint.yml
 .markdownlintignore
-.markdownlintrc
 Dockerfile
 LICENSE
 README.md
