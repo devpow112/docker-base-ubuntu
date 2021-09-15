@@ -55,7 +55,6 @@ jobs:
           restore-keys: buildx-
       - name: Build image
         uses: docker/build-push-action@v2.7.0
-        id: build
         with:
           builder: ${{steps.buildx.outputs.name}}
           context: .
