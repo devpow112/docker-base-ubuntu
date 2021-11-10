@@ -3,8 +3,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: daily
       time: '04:00'
       timezone: America/Toronto
     rebase-strategy: auto
@@ -12,13 +11,10 @@ updates:
       - auto
       - dependencies
       - github-actions
-    reviewers:
-      - devpow112
   - package-ecosystem: docker
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: daily
       time: '04:00'
       timezone: America/Toronto
     rebase-strategy: auto
@@ -26,5 +22,3 @@ updates:
       - auto
       - dependencies
       - docker
-    reviewers:
-      - devpow112
