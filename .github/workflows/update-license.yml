@@ -5,6 +5,7 @@ on:
     paths: .github/workflows/update-license.yml
   schedule:
     - cron: '0 0 1 1 *'
+  workflow_dispatch:
 permissions:
   contents: write
 concurrency: update-license

@@ -5,6 +5,7 @@ on:
     paths: .github/workflows/update-s6-overlay.yml
   schedule:
     - cron: '0 15 * * *'
+  workflow_dispatch:
 permissions:
   contents: write
 concurrency: update-s6-overlay
