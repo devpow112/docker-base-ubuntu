@@ -46,7 +46,7 @@ jobs:
         run: |
           git reset --hard origin/main
           sed -i -E "s/$REGEX/\1$VERSION\2/" Dockerfile
-          git config user.name ${{secrets.AUTOMATION_USERNAME}}
+          git config user.name ${{secrets.AUTOMATION_USER}}
           git config user.email ${{secrets.AUTOMATION_EMAIL}}
           git add Dockerfile
           git commit -m "Bump s6 overlay to $VERSION"
@@ -87,4 +87,4 @@ jobs:
               return prNumber;
             }
           result-encoding: string
-          github-token: ${{secrets.PERSONAL_GITHUB_TOKEN}}
+          github-token: ${{secrets.AUTOMATION_TOKEN}}
