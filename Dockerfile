@@ -48,6 +48,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     rm -rf \
       /var/lib/apt/lists/* \
       /var/tmp/* \
+      /var/log/* \
       /tmp/*
 
 # add local files
