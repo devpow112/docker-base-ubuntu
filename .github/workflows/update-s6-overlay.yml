@@ -20,8 +20,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.0
-        with:
-          persist-credentials: false
       - name: Determine version
         id: s6-overlay
         shell: bash
@@ -53,10 +51,7 @@ jobs:
           git config user.email $COMMIT_EMAIL
           git add Dockerfile
           git commit -m "Bump s6 overlay to $VERSION"
-          CREDENTIALS="x-access-token:$GITHUB_TOKEN"
-          URL="https://$CREDENTIALS@github.com/${{github.repository}}.git"
-          git remote set-url origin $URL
-          git push origin main
+          git push --force origin $BRANCH
         env:
           GITHUB_TOKEN: ${{secrets.PERSONAL_GITHUB_TOKEN}}
           COMMIT_USERNAME: github-actions[bot]
