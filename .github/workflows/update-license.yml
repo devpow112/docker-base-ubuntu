@@ -23,6 +23,10 @@ jobs:
       - name: Determine year
         id: year
         run: echo "::set-output name=value::$(date +%Y)"
+      - name: Switch to '${{env.BRANCH}}'
+        run: |
+          git fetch origin +refs/heads/$BRANCH:refs/heads/$BRANCH || true
+          git checkout $BRANCH || git checkout -b $BRANCH
       - name: Update LICENSE
         run: sed -i -E "s/$REGEX/\1${{steps.year.outputs.value}}\2/" LICENSE
       - name: Check for changes
