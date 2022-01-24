@@ -14,6 +14,9 @@ jobs:
     name: Update S6 Overlay
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      BRANCH: auto/update-s6-overlay
+      REGEX: ^(ARG S6_OVERLAY_VERSION=\")[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(\")$
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.0
@@ -28,12 +31,14 @@ jobs:
           VERSION=$(curl -sSf $URL | jq -r .tag_name)
           VERSION=${VERSION#"v"}
           echo "::set-output name=version::$VERSION"
-      - name: Update Dockerfile
+      - name: Switch to '${{env.BRANCH}}'
         run: |
-          VERSION=${{steps.s6-overlay.outputs.version}}
-          sed -i -E "s/$REGEX/\1$VERSION\2/" Dockerfile
+          git fetch origin +refs/heads/$BRANCH:refs/heads/$BRANCH || true
+          git checkout $BRANCH || git checkout -b $BRANCH
+      - name: Update Dockerfile
+        run: sed -i -E "s/$REGEX/\1$VERSION\2/" Dockerfile
         env:
-          REGEX: ^(ARG S6_OVERLAY_VERSION=\")[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(\")$
+          VERSION: ${{steps.s6-overlay.outputs.version}}
       - name: Check for changes
         id: changes
         run: >
@@ -42,6 +47,8 @@ jobs:
       - name: Push commit
         if: steps.changes.outputs.exist
         run: |
+          git reset --hard origin/main
+          sed -i -E "s/$REGEX/\1$VERSION\2/" Dockerfile
           git config user.name $COMMIT_USERNAME
           git config user.email $COMMIT_EMAIL
           git add Dockerfile
@@ -55,3 +62,38 @@ jobs:
           COMMIT_USERNAME: github-actions[bot]
           COMMIT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           VERSION: ${{steps.s6-overlay.outputs.version}}
+      - name: Create pull request
+        if: steps.changes.outputs.exist
+        uses: actions/github-script@v5.1.0
+        with:
+          script: |
+            const version = '${{steps.s6-overlay.outputs.version}}';
+            const title = `Bump s6 overlay to ${version}`;
+            const [owner, repo] = '${{github.repository}}'.split('/');
+            const base = 'refs/heads/main';
+            const head = 'refs/heads/${{env.BRANCH}}';
+            const pullRequests = await github.rest.pulls.list({
+              head: `${owner}:${head}`,
+              owner, repo, base
+            });
+            if (pullRequests.data.length === 0) {
+              const createResult = await github.rest.pulls.create({
+                title, owner, repo, head, base
+              });
+              github.rest.issues.addLabels({
+                issue_number: createResult.data.number,
+                owner, repo, labels: ['auto']
+              });
+              console.log('Created new pull request');
+              return createResult.data.number;
+            } else {
+              const prNumber = pullRequests.data.first().number;
+              github.rest.issues.update({
+                issue_number: prNumber,
+                title, owner, repo
+              });
+              console.log(`Pull request already exists, updated #${prNumber}`);
+              return prNumber;
+            }
+          result-encoding: string
+          github-token: ${{secrets.PERSONAL_GITHUB_TOKEN}}
