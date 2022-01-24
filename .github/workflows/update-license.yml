@@ -48,8 +48,8 @@ jobs:
         uses: actions/github-script@v5.1.0
         with:
           script: |
-            const version = '${{steps.year.outputs.value}}';
-            const title = `Update license year to ${version}`;
+            const year = '${{steps.year.outputs.value}}';
+            const title = `Update license year to ${year}`;
             const [owner, repo] = '${{github.repository}}'.split('/');
             const base = 'refs/heads/main';
             const head = 'refs/heads/${{env.BRANCH}}';
