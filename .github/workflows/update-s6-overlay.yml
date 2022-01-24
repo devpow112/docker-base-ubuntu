@@ -33,7 +33,7 @@ jobs:
           git fetch origin +refs/heads/$BRANCH:refs/heads/$BRANCH || true
           git checkout $BRANCH || git checkout -b $BRANCH
       - name: Update Dockerfile
-        run: sed -i -E "s/$REGEX/\1$VERSION\2/" Dockerfile
+        run: sed -i -E "s/$REGEX/\1$VERSION\3/" Dockerfile
         env:
           VERSION: ${{steps.s6-overlay.outputs.version}}
       - name: Check for changes
@@ -45,7 +45,7 @@ jobs:
         if: steps.changes.outputs.exist
         run: |
           git reset --hard origin/main
-          sed -i -E "s/$REGEX/\1$VERSION\2/" Dockerfile
+          sed -i -E "s/$REGEX/\1$VERSION\3/" Dockerfile
           git config user.name ${{secrets.AUTOMATION_USER}}
           git config user.email ${{secrets.AUTOMATION_EMAIL}}
           git add Dockerfile
@@ -78,7 +78,7 @@ jobs:
               console.log('Created new pull request');
               return createResult.data.number;
             } else {
-              const prNumber = pullRequests.data.first().number;
+              const prNumber = pullRequests.data[0].number;
               github.rest.issues.update({
                 issue_number: prNumber,
                 title, owner, repo
