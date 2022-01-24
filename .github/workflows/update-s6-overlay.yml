@@ -24,11 +24,10 @@ jobs:
         id: s6-overlay
         shell: bash
         run: |
-          URL='https://api.github.com/repos/just-containers/s6-overlay/releases'
-          URL="$URL/latest"
-          VERSION=$(curl -sSf $URL | jq -r .tag_name)
-          VERSION=${VERSION#"v"}
-          echo "::set-output name=version::$VERSION"
+          VERSION=$(curl -sSf "$URL/latest" | jq -r .tag_name)
+          echo "::set-output name=version::${VERSION#'v'}"
+        env:
+          URL: https://api.github.com/repos/just-containers/s6-overlay/releases
       - name: Switch to '${{env.BRANCH}}'
         run: |
           git fetch origin +refs/heads/$BRANCH:refs/heads/$BRANCH || true
@@ -47,15 +46,12 @@ jobs:
         run: |
           git reset --hard origin/main
           sed -i -E "s/$REGEX/\1$VERSION\2/" Dockerfile
-          git config user.name $COMMIT_USERNAME
-          git config user.email $COMMIT_EMAIL
+          git config user.name ${{secrets.AUTOMATION_USERNAME}}
+          git config user.email ${{secrets.AUTOMATION_EMAIL}}
           git add Dockerfile
           git commit -m "Bump s6 overlay to $VERSION"
           git push --force origin $BRANCH
         env:
-          GITHUB_TOKEN: ${{secrets.PERSONAL_GITHUB_TOKEN}}
-          COMMIT_USERNAME: github-actions[bot]
-          COMMIT_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
           VERSION: ${{steps.s6-overlay.outputs.version}}
       - name: Create pull request
         if: steps.changes.outputs.exist
