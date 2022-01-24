@@ -48,7 +48,8 @@ jobs:
         uses: actions/github-script@v5.1.0
         with:
           script: |
-            const title = `Bump s6 overlay to ${{steps.year.outputs.value}}`;
+            const version = '${{steps.year.outputs.value}}';
+            const title = `Update license year to ${version}`;
             const [owner, repo] = '${{github.repository}}'.split('/');
             const base = 'refs/heads/main';
             const head = 'refs/heads/${{env.BRANCH}}';
