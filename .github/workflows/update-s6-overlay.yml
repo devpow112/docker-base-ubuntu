@@ -73,7 +73,7 @@ jobs:
               });
               github.rest.issues.addLabels({
                 issue_number: createResult.data.number,
-                owner, repo, labels: ['auto']
+                owner, repo, labels: ['auto', 'dependencies', 'docker']
               });
               console.log('Created new pull request');
               return createResult.data.number;
