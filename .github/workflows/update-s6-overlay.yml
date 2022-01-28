@@ -63,6 +63,7 @@ jobs:
             const [owner, repo] = '${{github.repository}}'.split('/');
             const base = 'refs/heads/main';
             const head = 'refs/heads/${{env.BRANCH}}';
+            const labels = ['auto', 'dependencies', 'docker'];
             const pullRequests = await github.rest.pulls.list({
               head: `${owner}:${head}`,
               owner, repo, base
@@ -73,7 +74,7 @@ jobs:
               });
               github.rest.issues.addLabels({
                 issue_number: createResult.data.number,
-                owner, repo, labels: ['auto', 'dependencies', 'docker']
+                owner, repo, labels
               });
               console.log('Created new pull request');
               return createResult.data.number;
@@ -81,7 +82,7 @@ jobs:
               const prNumber = pullRequests.data[0].number;
               github.rest.issues.update({
                 issue_number: prNumber,
-                title, owner, repo
+                title, owner, repo, labels
               });
               console.log(`Pull request already exists, updated #${prNumber}`);
               return prNumber;
