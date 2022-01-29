@@ -52,6 +52,7 @@ jobs:
           git commit -m "Bump s6 overlay to $VERSION"
           git push --force origin $BRANCH
         env:
+          GITHUB_TOKEN: ${{secrets.AUTOMATION_TOKEN}}
           VERSION: ${{steps.s6-overlay.outputs.version}}
       - name: Create pull request
         if: steps.changes.outputs.exist
