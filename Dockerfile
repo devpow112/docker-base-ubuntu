@@ -35,13 +35,19 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
       -U -d /config \
       -s /bin/false primary-user && \
     usermod -a -G users primary-user && \
-    PLATFORM_TRANSFORM="s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/" && \
+    PLATFORM_TRANSFORM="s/^linux\///" && \	
+    PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^amd64/x86_64/" && \	
+    PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^arm64/aarch64/" && \	
+    PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^arm\/v7/armhf/" && \	
     ARCH=$(echo ${TARGETPLATFORM} | sed "${PLATFORM_TRANSFORM}") && \
-    URL='https://github.com/just-containers/s6-overlay/releases/download/' && \
-    URL="${URL}v${S6_OVERLAY_VERSION}/s6-overlay-${ARCH}-installer" && \
-    curl -sSfo /tmp/s6-overlay-installer -L "${URL}" && \
-    chmod u+x /tmp/s6-overlay-installer && \
-    /tmp/s6-overlay-installer / && \
+    URL='https://github.com/just-containers/s6-overlay/releases/download' && \
+    URL="${URL}/v${S6_OVERLAY_VERSION}/" && \
+    NOARCH_URL="${URL}/s6-overlay-noarch-${S6_OVERLAY_VERSION}.tar.xz" && \
+    ARCH_URL="${URL}/s6-overlay-${ARCH}-${S6_OVERLAY_VERSION}.tar.xz" && \
+    curl -sSfo /tmp/s6-overlay-noarch.tar.xz -L "${NOARCH_URL}" && \
+    curl -sSfo /tmp/s6-overlay-arch.tar.xz -L "${ARCH_URL}" && \
+    tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz / && \
+    tar -C / -Jxpf /tmp/s6-overlay-arch.tar.xz / && \
     apt-get autoremove --purge -y curl ca-certificates && \
     apt-get autoremove --purge -y && \
     apt-get clean && \
