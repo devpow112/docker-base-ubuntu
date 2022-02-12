@@ -4,7 +4,7 @@ FROM ubuntu:focal-20220113
 ARG TARGETPLATFORM
 ARG LANGUAGE="en_US"
 ARG ENCODING="UTF-8"
-ARG S6_OVERLAY_VERSION="2.2.0.3"
+ARG S6_OVERLAY_VERSION="3.0.0.2"
 
 # set default shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -13,37 +13,65 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV HOME="/root" \
     TERM="xterm" \
     LANG=${LANGUAGE}.${ENCODING} \
-    S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
-    S6_KEEP_ENV=0
+    S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
 # set up packages, locale and non-root user
 RUN export DEBIAN_FRONTEND='noninteractive' && \
+    echo '###### Set up packages' && \
     apt-get update && \
     apt-get upgrade -y && \
-    apt-get install --no-install-recommends -y \
+    apt-get install --no-install-recommends --no-install-suggests -y \
       apt-utils \
       ca-certificates \
       curl \
       locales \
-      tzdata && \
+      tzdata \
+      xz-utils && \
+    echo '###### Set up locale' && \
     localedef \
       -i ${LANGUAGE} -c -f ${ENCODING} \
       -A /usr/share/locale/locale.alias \
       ${LANG} && \
+    echo '###### Set up user' && \
     mkdir /config && \
     useradd \
       -U -d /config \
       -s /bin/false primary-user && \
     usermod -a -G users primary-user && \
-    PLATFORM_TRANSFORM="s/^linux\///;s/^arm64/aarch64/;s/^arm\/v7/armhf/" && \
+    echo '###### Set up s6 overlay' && \
+    PLATFORM_TRANSFORM="s/^linux\///" && \
+    PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^amd64/x86_64/" && \
+    PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^arm64/aarch64/" && \
+    PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^arm\/v7/armhf/" && \
+    PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^ppc64le/riscv64/" && \
     ARCH=$(echo ${TARGETPLATFORM} | sed "${PLATFORM_TRANSFORM}") && \
-    URL='https://github.com/just-containers/s6-overlay/releases/download/' && \
-    URL="${URL}v${S6_OVERLAY_VERSION}/s6-overlay-${ARCH}-installer" && \
-    curl -sSfo /tmp/s6-overlay-installer -L "${URL}" && \
-    chmod u+x /tmp/s6-overlay-installer && \
-    /tmp/s6-overlay-installer / && \
-    apt-get autoremove --purge -y curl ca-certificates && \
+    echo "###### Platform mapping: ${TARGETPLATFORM} => ${ARCH}" && \
+    URL='https://github.com/just-containers/s6-overlay/releases/download' && \
+    URL="${URL}/v${S6_OVERLAY_VERSION}" && \
+    curl -sSf \
+      -o /tmp/s6-overlay-noarch.tar.xz \
+      -L "${URL}/s6-overlay-noarch-${S6_OVERLAY_VERSION}.tar.xz" && \
+    curl -sSf \
+      -o /tmp/s6-overlay-arch.tar.xz \
+      -L "${URL}/s6-overlay-${ARCH}-${S6_OVERLAY_VERSION}.tar.xz" && \
+    curl -sSf \
+      -o /tmp/s6-overlay-symlinks-noarch.tar.xz \
+      -L "${URL}/s6-overlay-symlinks-noarch-${S6_OVERLAY_VERSION}.tar.xz" && \
+    curl -sSf \
+      -o /tmp/s6-overlay-symlinks-arch.tar.xz \
+      -L "${URL}/s6-overlay-symlinks-arch-${S6_OVERLAY_VERSION}.tar.xz" && \
+    curl -sSf \
+      -o /tmp/syslogd-overlay-noarch.tar.xz \
+      -L "${URL}/syslogd-overlay-noarch-${S6_OVERLAY_VERSION}.tar.xz" && \
+    tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz && \
+    tar -C / -Jxpf /tmp/s6-overlay-arch.tar.xz && \
+    tar -C / -Jxpf /tmp/s6-overlay-symlinks-noarch.tar.xz && \
+    tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz && \
+    tar -C / -Jxpf /tmp/syslogd-overlay-noarch.tar.xz && \
+    echo '###### Clean up' && \
+    apt-get autoremove --purge -y curl ca-certificates xz-utils && \
     apt-get autoremove --purge -y && \
+    apt-get autoclean && \
     apt-get clean && \
     rm -rf \
       /var/lib/apt/lists/* \
