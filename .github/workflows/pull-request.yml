@@ -2,15 +2,18 @@ name: Pull Request
 on:
   pull_request:
     branches: main
+permissions:
+  contents: read
 jobs:
   ci:
     name: CI
-    permissions:
-      contents: read
     uses: ./.github/workflows/ci.yml
   label:
     name: Label
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     timeout-minutes: 5
     steps:
       - name: Apply labels
