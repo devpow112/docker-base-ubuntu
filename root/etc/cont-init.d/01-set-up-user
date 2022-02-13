@@ -1,5 +1,7 @@
 #!/command/with-contenv bash
 
+set -e
+
 if [ -e /.01-set-up-user-complete ]; then
   exit 0
 fi
