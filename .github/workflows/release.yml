@@ -1,21 +1,22 @@
 name: Release
 on:
-  workflow_run:
-    workflows: CI
+  push:
     branches: main
-    types: completed
+concurrency: release
 permissions:
   contents: read
-  packages: write
-concurrency: release
 jobs:
-  build:
-    name: Release
+  ci:
+    name: CI
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+  cd:
+    name: CD
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: >
-      github.event_name == 'workflow_run' &&
-      github.event.workflow_run.conclusion == 'success'
+    needs:
+      - ci
     services:
       registry:
         image: registry

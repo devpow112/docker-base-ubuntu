@@ -1,7 +1,6 @@
 # Docker Ubuntu (Base)
 
 [![License]](LICENSE)
-[![CI][CI Badge]][CI Workflow]
 [![Release][Release Badge]][Release Workflow]
 
 Ubuntu docker container for use as base for other containers.
@@ -51,13 +50,13 @@ Not recommended but will work if you need a quick Ubuntu environment to do
 testing with.
 
 ```sh
-docker run --it --rm --entrypoint /bin/bash ghcr.io/devpow112/base-ubuntu:latest
+docker run --it --rm \
+  --entrypoint /bin/bash \
+  ghcr.io/devpow112/base-ubuntu:latest
 ```
 
 <!-- links -->
 [License]: https://img.shields.io/github/license/devpow112/docker-base-ubuntu?label=License
-[CI Badge]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/ci.yml/badge.svg?branch=main
-[CI Workflow]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/ci.yml?query=branch%3Amain
 [Release Badge]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml/badge.svg?branch=main
 [Release Workflow]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml?query=branch%3Amain
 [Docker Buildx]: https://docs.docker.com/buildx/working-with-buildx
