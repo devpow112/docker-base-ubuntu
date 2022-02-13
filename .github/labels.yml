@@ -1,6 +1,9 @@
 - name: auto
   description: Opened by an automated process
   color: bdce3b
+- name: bash
+  description: Pull requests that updates bash code
+  color: 4eaa25
 - name: bug
   description: Something isn't working
   color: d73a4a
