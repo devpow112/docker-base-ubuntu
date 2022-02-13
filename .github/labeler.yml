@@ -6,4 +6,4 @@ docker:
 github-actions:
   - .github/workflows/*.yml
 bash:
-  - root/etc/cont-init.d
+  - root/etc/cont-init.d/*
