@@ -28,17 +28,14 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
-      CACHE_FROM: type=local,src=/tmp/.buildx-cache
-      CACHE_TO: type=local,mode=max,dest=/tmp/.buildx-cache
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.0
       - name: Set up QEMU
+        id: qemu
         uses: docker/setup-qemu-action@v1.2.0
         with:
-          platforms: ${{env.PLATFORMS}}
+          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1.6.0
@@ -55,7 +52,7 @@ jobs:
         with:
           builder: ${{steps.buildx.outputs.name}}
           context: .
-          platforms: ${{env.PLATFORMS}}
-          cache-from: ${{env.CACHE_FROM}}
-          cache-to: ${{env.CACHE_TO}}
+          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
           push: false
