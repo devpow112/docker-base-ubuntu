@@ -1,3 +1,5 @@
+bash:
+  - root/**/*
 documentation:
   - '*.md'
 docker:
@@ -5,5 +7,3 @@ docker:
   - .dockerignore
 github-actions:
   - .github/workflows/*.yml
-bash:
-  - root/etc/cont-init.d/*
