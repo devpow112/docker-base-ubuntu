@@ -1,5 +1,7 @@
 #!/command/with-contenv bash
 
+set -e
+
 if [ -e /.02-set-up-timezone-complete ]; then
   exit 0
 fi
