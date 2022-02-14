@@ -7,7 +7,7 @@ Ubuntu docker container for use as base for other containers.
 
 ## Building
 
-```bash
+```console
 docker build -t base-ubuntu -f Dockerfile \
   --build-arg "TARGETPLATFORM=..." \
   --build-arg "LANGUAGE=..." \
@@ -50,7 +50,7 @@ FROM ghcr.io/devpow112/base-ubuntu:latest
 Not recommended but will work if you need a quick Ubuntu environment to do
 testing with.
 
-```sh
+```console
 docker run --it --rm \
   --entrypoint /bin/bash \
   ghcr.io/devpow112/base-ubuntu:latest
