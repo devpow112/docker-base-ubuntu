@@ -45,7 +45,6 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^amd64/x86_64/" && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^arm64/aarch64/" && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^arm\/v7/armhf/" && \
-    PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^ppc64le/riscv64/" && \
     ARCH=$(echo ${TARGETPLATFORM} | sed "${PLATFORM_TRANSFORM}") && \
     echo "###### Platform mapping s6 overlay: ${TARGETPLATFORM} => ${ARCH}" && \
     URL='https://github.com/just-containers/s6-overlay/releases/download' && \
