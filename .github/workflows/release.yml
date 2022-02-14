@@ -24,6 +24,7 @@ jobs:
         ports:
           - 5000:5000
     env:
+      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/riscv64,linux/s390x
       PACKAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
       PACKAGE_TEMP: localhost:5000/${{github.repository_owner}}/base-ubuntu
     steps:
@@ -34,7 +35,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1.2.0
         with:
-          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
+          platforms: ${{env.PLATFORMS}}
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1.6.0
@@ -53,7 +54,7 @@ jobs:
         with:
           builder: ${{steps.buildx.outputs.name}}
           context: .
-          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
+          platforms: ${{env.PLATFORMS}}
           tags: ${{env.PACKAGE_TEMP}}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
@@ -147,7 +148,7 @@ jobs:
         with:
           builder: ${{steps.buildx.outputs.name}}
           context: .
-          platforms: linux/amd64,linux/arm/v7,linux/arm64,linux/ppc64le
+          platforms: ${{env.PLATFORMS}}
           tags: ${{steps.info.outputs.docker-tags}}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
