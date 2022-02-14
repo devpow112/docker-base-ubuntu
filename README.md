@@ -18,8 +18,9 @@ docker build -t base-ubuntu -f Dockerfile \
 
 ### Arguments
 
-- `TARGETPLATFORM` - Set by [Docker Buildx] automatically. This will need to be
-  set to a supported platform if building locally.
+- `TARGETPLATFORM` - Set by [Docker Buildx] automatically. Currently supported
+  platforms are `amd64`, `arm/v7`, `arm64`, `riscv64` and `s390x`. This will
+  need to be set to a supported platform if building locally.
 - `LANGUAGE` - The language code that is set globally for the system. Defaults
   to `en_US`. See [locale] for more details.
 - `ENCODING` - Character encoding that is set globally for the system. Defaults
