@@ -41,13 +41,13 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
       -s /bin/false primary-user && \
     usermod -a -G users primary-user && \
     echo '###### Set up s6 overlay' && \
-    PLATFORM_TRANSFORM="s/^linux\///" && \
+    PLATFORM_TRANSFORM='s/^linux\///' && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^amd64/x86_64/" && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^arm64/aarch64/" && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^arm\/v7/armhf/" && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^ppc64le/riscv64/" && \
     ARCH=$(echo ${TARGETPLATFORM} | sed "${PLATFORM_TRANSFORM}") && \
-    echo "###### Platform mapping: ${TARGETPLATFORM} => ${ARCH}" && \
+    echo "###### Platform mapping s6 overlay: ${TARGETPLATFORM} => ${ARCH}" && \
     URL='https://github.com/just-containers/s6-overlay/releases/download' && \
     URL="${URL}/v${S6_OVERLAY_VERSION}" && \
     curl -sSf \
