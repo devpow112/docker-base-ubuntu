@@ -2,7 +2,7 @@
 
 set -e
 
-if [ -e /.01-set-up-user-complete ]; then
+if [ -e /.base-set-up-user-complete ]; then
   exit 0
 fi
 
@@ -52,4 +52,4 @@ if [[ $SGID ]]; then
   fi
 fi
 
-touch /.01-set-up-user-complete
+touch /.base-set-up-user-complete

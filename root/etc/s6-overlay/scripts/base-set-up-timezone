@@ -2,7 +2,7 @@
 
 set -e
 
-if [ -e /.02-set-up-timezone-complete ]; then
+if [ -e /.base-set-up-timezone-complete ]; then
   exit 0
 fi
 
@@ -24,4 +24,4 @@ if [[ $TZ ]]; then
   fi
 fi
 
-touch /.02-set-up-timezone-complete
+touch /.base-set-up-timezone-complete
