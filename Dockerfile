@@ -4,7 +4,7 @@ FROM ubuntu:focal-20220113
 ARG TARGETPLATFORM
 ARG LANGUAGE="en_US"
 ARG ENCODING="UTF-8"
-ARG S6_OVERLAY_VERSION="3.0.0.2"
+ARG S6_OVERLAY_VERSION="3.0.0.2-1"
 
 # set default shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -14,8 +14,7 @@ ENV HOME="/root" \
     TERM="xterm" \
     LANG=${LANGUAGE}.${ENCODING} \
     S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
-    S6_GLOBAL_PATH="/command:/usr/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin"
-ENV S6_GLOBAL_PATH="${S6_GLOBAL_PATH}:/sbin:/bin"
+    S6_GLOBAL_PATH="/usr/local/bin:/usr/local/sbin:/usr/sbin:/sbin"
 
 # set up packages, locale and non-root user
 RUN export DEBIAN_FRONTEND='noninteractive' && \
@@ -69,7 +68,6 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-noarch.tar.xz && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz && \
     tar -C / -Jxpf /tmp/syslogd-overlay-noarch.tar.xz && \
-    echo "${S6_GLOBAL_PATH}" > /etc/s6-overlay/config/global_path && \
     echo '###### Clean up' && \
     apt-get autoremove --purge -y curl ca-certificates xz-utils && \
     apt-get autoremove --purge -y && \
