@@ -19,15 +19,16 @@ docker build -t base-ubuntu -f Dockerfile \
 ### Arguments
 
 - `TARGETPLATFORM` - Set by [Docker Buildx] automatically. Currently supported
-  platforms are `amd64`, `arm/v7`, `arm64`, `riscv64` and `s390x`. This will
-  need to be set to a supported platform if building locally.
+  platforms are `amd64`, `arm/v7`, `arm64`, `riscv64` and `s390x`. This should
+  be set automatically even if building locally using standard [Docker CLI].
 - `LANGUAGE` - The language code that is set globally for the system. Defaults
   to `en_US`. See [locale] for more details.
 - `ENCODING` - Character encoding that is set globally for the system. Defaults
   to `UTF-8`. See [locale] for more details.
 - `S6_OVERLAY_VERSION` - Version of the [s6 overlay] that is installed. This is
   automatically updated to the latest release and should only really need to be
-  set manually if trying out a new version locally when building.
+  set manually if trying out a new version locally when building. Only versions
+  **3** and higher are supported.
 
 ## Usage
 
@@ -61,6 +62,7 @@ docker run --it --rm \
 [Release Badge]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml/badge.svg?branch=main
 [Release Workflow]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml?query=branch%3Amain
 [Docker Buildx]: https://docs.docker.com/buildx/working-with-buildx
+[Docker CLI]: https://docs.docker.com/engine/reference/commandline/build
 [locale]: https://manpages.ubuntu.com/manpages/focal/man1/locale.1.html
 [s6 overlay]: https://github.com/just-containers/s6-overlay
 [Ubuntu]: https://hub.docker.com/_/ubuntu

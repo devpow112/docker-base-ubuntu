@@ -2,23 +2,23 @@ FROM ubuntu:focal-20220113
 
 # set default input arguments
 ARG TARGETPLATFORM
-ARG LANGUAGE="en_US"
-ARG ENCODING="UTF-8"
-ARG S6_OVERLAY_VERSION="3.0.0.2"
+ARG LANGUAGE=en_US
+ARG ENCODING=UTF-8
+ARG S6_OVERLAY_VERSION=3.0.0.2
 
 # set default shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# set environment variables
-ENV HOME="/root" \
-    TERM="xterm" \
-    LANG=${LANGUAGE}.${ENCODING} \
-    S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
-    S6_GLOBAL_PATH="/command:/usr/bin:/usr/sbin:/usr/local/sbin:/usr/local/bin"
-ENV S6_GLOBAL_PATH="${S6_GLOBAL_PATH}:/sbin:/bin"
+# set environment variables
+ENV HOME=/root \
+    TERM=xterm \
+    LANG="${LANGUAGE}.${ENCODING}" \
+    S6_CMD_WAIT_FOR_SERVICES=1 \
+    S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0 \
+    S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
 # set up packages, locale and non-root user
-RUN export DEBIAN_FRONTEND='noninteractive' && \
+RUN export DEBIAN_FRONTEND=noninteractive && \
     echo '###### Set up packages' && \
     apt-get update && \
     apt-get upgrade -y && \
@@ -31,9 +31,9 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
       xz-utils && \
     echo '###### Set up locale' && \
     localedef \
-      -i ${LANGUAGE} -c -f ${ENCODING} \
+      -i "${LANGUAGE}" -c -f "${ENCODING}" \
       -A /usr/share/locale/locale.alias \
-      ${LANG} && \
+      "${LANG}" && \
     echo '###### Set up user' && \
     mkdir /config && \
     useradd \
@@ -45,9 +45,9 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^amd64/x86_64/" && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^arm64/aarch64/" && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^arm\/v7/armhf/" && \
-    ARCH=$(echo ${TARGETPLATFORM} | sed "${PLATFORM_TRANSFORM}") && \
+    ARCH=$(echo "${TARGETPLATFORM}" | sed "${PLATFORM_TRANSFORM}") && \
     echo "###### Platform mapping s6 overlay: ${TARGETPLATFORM} => ${ARCH}" && \
-    URL='https://github.com/just-containers/s6-overlay/releases/download' && \
+    URL=https://github.com/just-containers/s6-overlay/releases/download && \
     URL="${URL}/v${S6_OVERLAY_VERSION}" && \
     curl -sSf \
       -o /tmp/s6-overlay-noarch.tar.xz \
@@ -69,7 +69,7 @@ RUN export DEBIAN_FRONTEND='noninteractive' && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-noarch.tar.xz && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz && \
     tar -C / -Jxpf /tmp/syslogd-overlay-noarch.tar.xz && \
-    echo "${S6_GLOBAL_PATH}" > /etc/s6-overlay/config/global_path && \
+    echo "${PATH}" > /etc/s6-overlay/config/global_path && \
     echo '###### Clean up' && \
     apt-get autoremove --purge -y curl ca-certificates xz-utils && \
     apt-get autoremove --purge -y && \
@@ -94,13 +94,13 @@ VOLUME /config
 LABEL maintainer devpow112 \
       org.opencontainers.image.authors devpow112 \
       org.opencontainers.image.description \
-	      "Ubuntu docker container for use as base for other containers." \
+	      'Ubuntu docker container for use as base for other containers.' \
       org.opencontainers.image.documentation \
         https://github.com/devpow112/docker-base-ubuntu#readme \
       org.opencontainers.image.licenses MIT \
       org.opencontainers.image.source \
         https://github.com/devpow112/docker-base-ubuntu \
-      org.opencontainers.image.title "Docker Ubuntu (Base)" \
+      org.opencontainers.image.title 'Docker Ubuntu (Base)' \
       org.opencontainers.image.url \
         https://github.com/devpow112/docker-base-ubuntu \
       org.opencontainers.image.vendor devpow112
