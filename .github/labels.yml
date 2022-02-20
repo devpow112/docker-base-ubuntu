@@ -2,7 +2,7 @@
   description: Opened by an automated process
   color: bdce3b
 - name: bash
-  description: Pull requests that updates bash code
+  description: Pull requests that update bash code
   color: 4eaa25
 - name: bug
   description: Something isn't working
@@ -11,10 +11,10 @@
   description: Clean-up or refactor of something already existing
   color: a7afe5
 - name: dependencies
-  description: Pull requests that updates a dependency file
+  description: Pull requests that update a dependency file
   color: 0366d6
 - name: docker
-  description: Pull requests that updates Docker code
+  description: Pull requests that update Docker code
   color: 21ceff
 - name: documentation
   description: Improvements or additions to documentation
@@ -26,7 +26,7 @@
   description: New feature or request
   color: a2eeef
 - name: github-actions
-  description: Pull requests that updates GitHub Actions code
+  description: Pull requests that update GitHub Actions code
   color: 000000
 - name: good first issue
   description: Good for newcomers
