@@ -1,5 +1,5 @@
 bash:
-  - root/**/*
+  - root/etc/s6-overlay/scripts/*
 documentation:
   - '*.md'
 docker:
