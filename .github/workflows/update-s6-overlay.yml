@@ -52,7 +52,7 @@ jobs:
         if: steps.changes.outputs.exist
         run: |
           git reset --hard origin/main
-          sed -i -E "s/$REGEX/\1$VERSION\3/" Dockerfile
+          sed -i -E "s/$REGEX/\1$VERSION/" Dockerfile
           git config user.name ${{secrets.AUTOMATION_USER}}
           git config user.email ${{secrets.AUTOMATION_EMAIL}}
           git add Dockerfile
