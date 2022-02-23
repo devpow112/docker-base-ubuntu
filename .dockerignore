@@ -1,6 +1,7 @@
 .git/
 .github/
 .vscode/
+test/
 .dockerignore
 .editorconfig
 .gitattributes
