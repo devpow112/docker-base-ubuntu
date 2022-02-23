@@ -50,6 +50,12 @@ jobs:
         id: buildx
         with:
           driver-opts: network=host
+      - name: Set up cache
+        uses: actions/cache@v2.1.7
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-${{hashFiles('Dockerfile', '.dockerignore', 'root/**')}}
+          restore-keys: buildx-
       - name: Build image
         uses: docker/build-push-action@v2.9.0
         with:
@@ -57,8 +63,8 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           tags: ${{env.IMAGE_TAG}}
           platforms: ${{env.PLATFORMS}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
           push: true
       - name: Report image details
         run: |
@@ -90,14 +96,20 @@ jobs:
         id: buildx
         with:
           driver-opts: network=host
+      - name: Set up cache
+        uses: actions/cache@v2.1.7
+        with:
+          path: /tmp/.buildx-cache
+          key: buildx-${{hashFiles('Dockerfile', '.dockerignore', 'root/**')}}
+          restore-keys: buildx-
       - name: Build image
         uses: docker/build-push-action@v2.9.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
           tags: ${{env.IMAGE_TAG}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
           push: true
       - name: Build test image
         uses: docker/build-push-action@v2.9.0
@@ -106,8 +118,8 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           build-args: IMAGE_TAG=${{env.IMAGE_TAG}}
           tags: ${{env.IMAGE_TEST_TAG}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
           load: true
       - name: Test
         run: >
