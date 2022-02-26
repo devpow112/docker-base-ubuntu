@@ -6,7 +6,7 @@ if [ -e /.base-apply-permissions-complete ]; then
   exit 0
 fi
 
-echo "Applying permissions for /config folder ..."
+echo 'Applying permissions for /config folder ...'
 chown -R primary-user:primary-user /config
-echo "Applying permissions for /config folder ... Done"
+echo 'Applying permissions for /config folder ... Done'
 touch /.base-apply-permissions-complete
