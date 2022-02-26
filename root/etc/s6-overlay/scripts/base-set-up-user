@@ -22,7 +22,7 @@ if [[ $PGID && $PGID != $current_pgid ]]; then
 fi
 
 if [[ $SGID ]]; then
-  group_prefix="secondary-group"
+  group_prefix='secondary-group'
   incoming_sgids=(${SGID//,/ })
   new_group_count=0
   new_group_names=()
