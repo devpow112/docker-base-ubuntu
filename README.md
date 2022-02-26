@@ -8,12 +8,12 @@ Ubuntu docker container for use as base for other containers.
 ## Building
 
 ```console
-docker build -t base-ubuntu -f Dockerfile \
+docker build \
   --build-arg "TARGETPLATFORM=..." \
   --build-arg "LANGUAGE=..." \
   --build-arg "ENCODING=..." \
   --build-arg "S6_OVERLAY_VERSION=..." \
-  base-ubuntu
+  -t base-ubuntu .
 ```
 
 ### Arguments
