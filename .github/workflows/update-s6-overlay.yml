@@ -19,7 +19,7 @@ jobs:
       REGEX: ^(ARG S6_OVERLAY_VERSION=)[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(\-[0-9])?$
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.0.0
         with:
           persist-credentials: false
       - name: Determine version
