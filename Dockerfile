@@ -64,7 +64,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-noarch.tar.xz && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz && \
     tar -C / -Jxpf /tmp/syslogd-overlay-noarch.tar.xz && \
-    echo "${PATH}" > /etc/s6-overlay/config/global_path && \
     echo '###### Clean up' && \
     apt-get autoremove --purge -y curl ca-certificates xz-utils && \
     apt-get autoremove --purge -y && \
