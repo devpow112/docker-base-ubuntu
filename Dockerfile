@@ -4,7 +4,7 @@ FROM ubuntu:focal-20220302
 ARG TARGETPLATFORM
 ARG LANGUAGE=en_US
 ARG ENCODING=UTF-8
-ARG S6_OVERLAY_VERSION=3.0.0.2-2
+ARG S6_OVERLAY_VERSION=3.1.0.1
 
 # set default shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -49,27 +49,21 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     echo "###### Platform mapping s6 overlay: ${TARGETPLATFORM} => ${ARCH}" && \
     URL=https://github.com/just-containers/s6-overlay/releases/download && \
     URL="${URL}/v${S6_OVERLAY_VERSION}" && \
-    curl -sSf \
-      -o /tmp/s6-overlay-noarch.tar.xz \
-      -L "${URL}/s6-overlay-noarch-${S6_OVERLAY_VERSION}.tar.xz" && \
-    curl -sSf \
-      -o /tmp/s6-overlay-arch.tar.xz \
-      -L "${URL}/s6-overlay-${ARCH}-${S6_OVERLAY_VERSION}.tar.xz" && \
-    curl -sSf \
-      -o /tmp/s6-overlay-symlinks-noarch.tar.xz \
-      -L "${URL}/s6-overlay-symlinks-noarch-${S6_OVERLAY_VERSION}.tar.xz" && \
-    curl -sSf \
-      -o /tmp/s6-overlay-symlinks-arch.tar.xz \
-      -L "${URL}/s6-overlay-symlinks-arch-${S6_OVERLAY_VERSION}.tar.xz" && \
-    curl -sSf \
-      -o /tmp/syslogd-overlay-noarch.tar.xz \
-      -L "${URL}/syslogd-overlay-noarch-${S6_OVERLAY_VERSION}.tar.xz" && \
+    curl -sSfo /tmp/s6-overlay-noarch.tar.xz \
+      -L "${URL}/s6-overlay-noarch.tar.xz" && \
+    curl -sSfo /tmp/s6-overlay-arch.tar.xz \
+      -L "${URL}/s6-overlay-${ARCH}.tar.xz" && \
+    curl -sSfo /tmp/s6-overlay-symlinks-noarch.tar.xz \
+      -L "${URL}/s6-overlay-symlinks-noarch.tar.xz" && \
+    curl -sSfo /tmp/s6-overlay-symlinks-arch.tar.xz \
+      -L "${URL}/s6-overlay-symlinks-arch.tar.xz" && \
+    curl -sSfo /tmp/syslogd-overlay-noarch.tar.xz \
+      -L "${URL}/syslogd-overlay-noarch.tar.xz" && \
     tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz && \
     tar -C / -Jxpf /tmp/s6-overlay-arch.tar.xz && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-noarch.tar.xz && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz && \
     tar -C / -Jxpf /tmp/syslogd-overlay-noarch.tar.xz && \
-    echo "${PATH}" > /etc/s6-overlay/config/global_path && \
     echo '###### Clean up' && \
     apt-get autoremove --purge -y curl ca-certificates xz-utils && \
     apt-get autoremove --purge -y && \
