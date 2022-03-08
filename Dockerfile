@@ -36,9 +36,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
       "${LANG}" && \
     echo '###### Set up user' && \
     mkdir /config && \
-    useradd \
-      -U -d /config \
-      -s /bin/false primary-user && \
+    useradd -U -d /config -s /bin/false primary-user && \
     usermod -a -G users primary-user && \
     echo '###### Set up s6 overlay' && \
     PLATFORM_TRANSFORM='s/^linux\///' && \
@@ -65,7 +63,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz && \
     tar -C / -Jxpf /tmp/syslogd-overlay-noarch.tar.xz && \
     echo '###### Clean up' && \
-    apt-get autoremove --purge -y curl ca-certificates xz-utils && \
+    apt-get autoremove --purge -y ca-certificates curl xz-utils && \
     apt-get autoremove --purge -y && \
     apt-get autoclean && \
     apt-get clean && \
