@@ -28,6 +28,7 @@ jobs:
         run: |
           VERSION=$(curl -sSf "$URL/latest" | jq -r .tag_name)
           echo "::set-output name=version::${VERSION#'v'}"
+          echo "::set-output name=release::$URL/$VERSION"
         env:
           URL: https://api.github.com/repos/just-containers/s6-overlay/releases
       - name: Switch to '${{env.BRANCH}}'
@@ -69,9 +70,11 @@ jobs:
         uses: actions/github-script@v6.0.0
         with:
           script: |
-            const version = '${{steps.s6-overlay.outputs.version}}';
-            const title = `Bump s6 overlay to ${version}`;
             const [owner, repo] = '${{github.repository}}'.split('/');
+            const version = '${{steps.s6-overlay.outputs.version}}';
+            const release = '${{steps.s6-overlay.outputs.release}}';
+            const title = `Bump s6 overlay to ${version}`;
+            const body = `Bump s6 overlay to [${version}](${release}).`
             const base = 'refs/heads/main';
             const head = 'refs/heads/${{env.BRANCH}}';
             const labels = ['auto', 'dependencies', 'docker'];
@@ -81,7 +84,7 @@ jobs:
             });
             if (pullRequests.data.length === 0) {
               const createResult = await github.rest.pulls.create({
-                title, owner, repo, head, base
+                title, owner, repo, head, base, body
               });
               github.rest.issues.addLabels({
                 issue_number: createResult.data.number,
@@ -93,7 +96,7 @@ jobs:
               const prNumber = pullRequests.data[0].number;
               github.rest.issues.update({
                 issue_number: prNumber,
-                title, owner, repo, labels
+                title, owner, repo, labels, body
               });
               console.log(`Pull request already exists, updated #${prNumber}`);
               return prNumber;
