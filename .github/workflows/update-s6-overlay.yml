@@ -29,10 +29,11 @@ jobs:
           )
           URL=https://api.github.com/repos/just-containers/s6-overlay/releases
           NEW_VERSION=$(curl -sSf "$URL/latest" | jq -r .tag_name)
+          NEW_VERSION=${NEW_VERSION#'v'}
           UPDATE_TITLE="Bump s6 overlay from $OLD_VERSION to $NEW_VERSION"
-          UPDATE_BODY="Bump s6 overlay from [$OLD_VERSION]($URL/$OLD_VERSION)"
-          UPDATE_BODY="$UPDATE_BODY to [$NEW_VERSION]($URL/$NEW_VERSION)."
-          echo "::set-output name=version::${NEW_VERSION#'v'}"
+          UPDATE_BODY="Bump s6 overlay from [$OLD_VERSION]($URL/v$OLD_VERSION)"
+          UPDATE_BODY="$UPDATE_BODY to [$NEW_VERSION]($URL/v$NEW_VERSION)."
+          echo "::set-output name=version::$NEW_VERSION"
           echo "::set-output name=update-title::$UPDATE_TITLE"
           echo "::set-output name=update-body:: $UPDATE_BODY"
       - name: Update Dockerfile
