@@ -1,9 +1,10 @@
 bash:
   - root/etc/s6-overlay/scripts/*
-documentation:
-  - '*.md'
 docker:
   - Dockerfile
   - .dockerignore
+documentation:
+  - '*.md'
+  - LICENSE
 github-actions:
   - .github/workflows/*.yml
