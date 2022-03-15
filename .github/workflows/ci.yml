@@ -57,7 +57,7 @@ jobs:
           key: buildx-${{hashFiles('Dockerfile', '.dockerignore', 'root/**')}}
           restore-keys: buildx-
       - name: Build image
-        uses: docker/build-push-action@v2.9.0
+        uses: docker/build-push-action@v2.10.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
@@ -103,7 +103,7 @@ jobs:
           key: buildx-${{hashFiles('Dockerfile', '.dockerignore', 'root/**')}}
           restore-keys: buildx-
       - name: Build image
-        uses: docker/build-push-action@v2.9.0
+        uses: docker/build-push-action@v2.10.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
@@ -112,7 +112,7 @@ jobs:
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
           push: true
       - name: Build test image
-        uses: docker/build-push-action@v2.9.0
+        uses: docker/build-push-action@v2.10.0
         with:
           context: ./test
           builder: ${{steps.buildx.outputs.name}}
