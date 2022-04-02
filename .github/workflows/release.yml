@@ -40,7 +40,7 @@ jobs:
         with:
           driver-opts: network=host
       - name: Set up cache
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3.0.1
         with:
           path: /tmp/.buildx-cache
           key: buildx-${{hashFiles('Dockerfile', '.dockerignore', 'root/**')}}
@@ -126,7 +126,7 @@ jobs:
           echo "::set-output name=docker-tags::$DOCKER_TAGS"
       - name: Create release
         if: steps.info.outputs.create-release
-        uses: ncipollo/release-action@v1.9.0
+        uses: ncipollo/release-action@v1.10.0
         with:
           tag: ${{steps.info.outputs.release-tag}}
           body: ${{steps.info.outputs.release-body}}
