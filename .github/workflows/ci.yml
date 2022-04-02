@@ -4,7 +4,8 @@ on:
 permissions:
   contents: read
 env:
-  IMAGE_TAG: localhost:5000/ci/base-ubuntu:latest
+  IMAGE_TAG: ghcr.io/${{github.repository_owner}}/base-ubuntu:latest
+  IMAGE_TEMP_TAG: localhost:5000/ci/base-ubuntu:latest
 defaults:
   run:
     shell: bash
@@ -33,6 +34,9 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
     env:
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/riscv64,linux/s390x
     services:
@@ -61,20 +65,58 @@ jobs:
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
-          tags: ${{env.IMAGE_TAG}}
+          tags: ${{env.IMAGE_TEMP_TAG}}
           platforms: ${{env.PLATFORMS}}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
           push: true
-      - name: Report image details
+      - name: Generate image details
+        id: image-details
+        if: github.event_name == 'pull_request'
         run: |
+          BODY=$'## Build Details\n\n'
           for PLATFORM in ${PLATFORMS//,/ }; do
-            echo -e "\nPlatform: $PLATFORM\n"
-            docker pull -q --platform=$PLATFORM ${{env.IMAGE_TAG}}
-            docker image history \
-              --format 'table {{.Size}}\t{{.CreatedBy}}' ${{env.IMAGE_TAG}}
-            docker rmi -f ${{env.IMAGE_TAG}} > /dev/null 2>&1
+            docker pull --platform=$PLATFORM ${{env.IMAGE_TAG}}
+            SIZE_OLD=$(docker inspect -f '{{.Size}}' ${{env.IMAGE_TAG}})
+            docker rmi -f ${{env.IMAGE_TEMP_TAG}}
+            docker pull --platform=$PLATFORM ${{env.IMAGE_TEMP_TAG}}
+            SIZE_NEW=$(docker inspect -f '{{.Size}}' ${{env.IMAGE_TEMP_TAG}})
+            DETAILS=$(
+              docker image history --format \
+              'table | {{.Size}} | {{.CreatedBy}} |' ${{env.IMAGE_TEMP_TAG}}
+            )
+            DETAILS=${DETAILS#*$'\n'}
+            docker rmi -f ${{env.IMAGE_TEMP_TAG}}
+            SIZE=$(echo $SIZE_NEW | numfmt --to=iec --suffix=B --format='%.2f')
+            SIZE_DIFF=$(
+              echo "$(( SIZE_NEW - SIZE_OLD ))" |
+              numfmt --to=iec --suffix=B --format='%.2f'
+            )
+            if (( $SIZE_NEW > $SIZE_OLD )); then
+              SIZE="$SIZE \`+$SIZE_DIFF\`"
+            elif (( $SIZE_NEW < $SIZE_OLD )); then
+              SIZE="$SIZE \`-$SIZE_DIFF\`"
+            fi
+            BODY+="\`$PLATFORM\`: **$SIZE**"
+            BODY+=$'\n\n<details>\n<summary>Layer Breakdown</summary>\n\n'
+            BODY+=$'| Size | Created By |\n'
+            BODY+=$'| ---- | ---------- |\n'
+            BODY+="$DETAILS"
+            BODY+=$'\n\n</details>\n\n'
           done
+          BODY=${BODY//'%'/'%25'}
+          BODY=${BODY//$'\n'/'%0A'}
+          BODY=${BODY//$'\r'/'%0D'}
+          echo "::set-output name=body::$BODY"
+      - name: Hide outdated build details comments
+        uses: int128/hide-comment-action@v1.2.0
+        if: github.event_name == 'pull_request'
+      - name: Create build details comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v2.0.0
+        with:
+          issue-number: ${{github.event.pull_request.number}}
+          body: ${{steps.image-details.outputs.body}}
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -107,7 +149,7 @@ jobs:
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
-          tags: ${{env.IMAGE_TAG}}
+          tags: ${{env.IMAGE_TEMP_TAG}}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
           push: true
@@ -116,7 +158,7 @@ jobs:
         with:
           context: ./test
           builder: ${{steps.buildx.outputs.name}}
-          build-args: IMAGE_TAG=${{env.IMAGE_TAG}}
+          build-args: IMAGE_TAG=${{env.IMAGE_TEMP_TAG}}
           tags: ${{env.IMAGE_TEST_TAG}}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
