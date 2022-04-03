@@ -49,12 +49,6 @@ jobs:
         id: buildx
         with:
           driver-opts: network=host
-      - name: Set up cache
-        uses: actions/cache@v3.0.1
-        with:
-          path: /tmp/.buildx-cache
-          key: buildx-${{hashFiles('Dockerfile', '.dockerignore', 'root/**')}}
-          restore-keys: buildx-
       - name: Build image
         uses: docker/build-push-action@v2.10.0
         with:
@@ -62,8 +56,8 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           tags: ${{env.IMAGE_TEMP_TAG}}
           platforms: ${{env.PLATFORMS}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
       - name: Generate image details
         id: image-details
@@ -133,20 +127,14 @@ jobs:
         id: buildx
         with:
           driver-opts: network=host
-      - name: Set up cache
-        uses: actions/cache@v3.0.1
-        with:
-          path: /tmp/.buildx-cache
-          key: buildx-${{hashFiles('Dockerfile', '.dockerignore', 'root/**')}}
-          restore-keys: buildx-
       - name: Build image
         uses: docker/build-push-action@v2.10.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
           tags: ${{env.IMAGE_TEMP_TAG}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
       - name: Build test image
         uses: docker/build-push-action@v2.10.0
@@ -155,8 +143,8 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           build-args: IMAGE_TAG=${{env.IMAGE_TEMP_TAG}}
           tags: ${{env.IMAGE_TEST_TAG}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           load: true
       - name: Test
         run: >
