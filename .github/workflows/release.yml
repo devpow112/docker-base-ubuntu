@@ -43,8 +43,8 @@ jobs:
         uses: actions/cache@v3.0.1
         with:
           path: /tmp/.buildx-cache
-          key: buildx-${{hashFiles('Dockerfile', '.dockerignore', 'root/**')}}
-          restore-keys: buildx-
+          key: ${{runner.os}}-buildx-${{github.sha}}
+          restore-keys: ${{runner.os}}-buildx-
       - name: Build image
         uses: docker/build-push-action@v2.10.0
         id: build
@@ -54,7 +54,7 @@ jobs:
           platforms: ${{env.PLATFORMS}}
           tags: ${{env.PACKAGE_LOCAL}}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           push: true
       - name: Determine info
         id: info
@@ -148,5 +148,9 @@ jobs:
           platforms: ${{env.PLATFORMS}}
           tags: ${{steps.info.outputs.docker-tags}}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           push: true
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
