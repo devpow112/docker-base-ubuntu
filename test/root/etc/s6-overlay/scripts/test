@@ -39,7 +39,7 @@ echo "=> Check '/etc/timezone' is correct"
 timezone=$(cat /etc/timezone)
 
 if [[ "$timezone" == "$TZ" ]]; then
-  echo "=> Success! File '/etc/timezone' correct ($timezone => $TZ)"
+  echo "=> Success! File '/etc/timezone' correct"
 else
   echo "=> Failed! File '/etc/timezone' incorrect ($timezone => $TZ)"
 
@@ -52,7 +52,7 @@ localtime=$(readlink /etc/localtime)
 expected="/usr/share/zoneinfo/$TZ"
 
 if [[ "$localtime" == "$expected" ]]; then
-  echo "=> Success! File '/etc/localtime' correct ($localtime => $expected)"
+  echo "=> Success! File '/etc/localtime' correct"
 else
   echo "=> Failed! File '/etc/localtime' incorrect ($localtime => $expected)"
 
