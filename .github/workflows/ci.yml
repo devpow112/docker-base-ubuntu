@@ -90,7 +90,7 @@ jobs:
             if (( $SIZE_NEW > $SIZE_OLD )); then
               SIZE="$SIZE \`+$SIZE_DIFF\`"
             elif (( $SIZE_NEW < $SIZE_OLD )); then
-              SIZE="$SIZE \`-$SIZE_DIFF\`"
+              SIZE="$SIZE \`$SIZE_DIFF\`"
             fi
             BODY+="\`$PLATFORM\`: **$SIZE**"
             BODY+=$'\n\n<details>\n<summary>Layer Breakdown</summary>\n\n'
