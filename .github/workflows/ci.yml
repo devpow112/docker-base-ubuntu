@@ -104,7 +104,7 @@ jobs:
           BODY=${BODY//$'\r'/'%0D'}
           echo "::set-output name=body::$BODY"
       - name: Hide outdated build details comments
-        uses: int128/hide-comment-action@v1.6.0
+        uses: int128/hide-comment-action@v1.7.0
         if: github.event_name == 'pull_request'
       - name: Create build details comment
         if: github.event_name == 'pull_request'
