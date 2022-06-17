@@ -27,12 +27,15 @@ jobs:
             grep -oEi "$REGEX" Dockerfile |
             grep -oEi '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(\-[0-9])?$'
           )
-          URL=https://api.github.com/repos/just-containers/s6-overlay/releases
-          NEW_VERSION=$(curl -sSf "$URL/latest" | jq -r .tag_name)
+          API=https://api.github.com/repos/just-containers/s6-overlay/releases
+          RELEASES=https://github.com/just-containers/s6-overlay/releases  
+          NEW_VERSION=$(curl -sSf "$API/latest" | jq -r .tag_name)
           NEW_VERSION=${NEW_VERSION#'v'}
-          UPDATE_TITLE="Bump s6 overlay from $OLD_VERSION to $NEW_VERSION"
-          UPDATE_BODY="Bump s6 overlay from [$OLD_VERSION]($URL/v$OLD_VERSION)"
-          UPDATE_BODY="$UPDATE_BODY to [$NEW_VERSION]($URL/v$NEW_VERSION)."
+          BUMP='Bump s6 overlay from'
+          UPDATE_TITLE="$BUMP $OLD_VERSION to $NEW_VERSION"
+          UPDATE_BODY="$BUMP"
+          UPDATE_BODY="$UPDATE_BODY [$OLD_VERSION]($RELEASES/v$OLD_VERSION)"
+          UPDATE_BODY="$UPDATE_BODY to [$NEW_VERSION]($RELEASES/v$NEW_VERSION)."
           echo "::set-output name=version::$NEW_VERSION"
           echo "::set-output name=update-title::$UPDATE_TITLE"
           echo "::set-output name=update-body:: $UPDATE_BODY"
