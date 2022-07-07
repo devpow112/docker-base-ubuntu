@@ -82,9 +82,15 @@ ENTRYPOINT ["/init"]
 # set up config volume
 VOLUME /config
 
+# buildtime related arguments
+ARG BUILD_DATETIME
+ARG BUILD_REVISION
+ARG BUILD_VERSION
+
 # labels
 LABEL maintainer devpow112
 LABEL org.opencontainers.image.authors devpow112
+LABEL org.opencontainers.image.title 'Docker Ubuntu (Base)'
 LABEL org.opencontainers.image.description \
         'Ubuntu docker container for use as base for other containers.'
 LABEL org.opencontainers.image.documentation \
@@ -92,7 +98,9 @@ LABEL org.opencontainers.image.documentation \
 LABEL org.opencontainers.image.licenses MIT
 LABEL org.opencontainers.image.source \
         https://github.com/devpow112/docker-base-ubuntu
-LABEL org.opencontainers.image.title 'Docker Ubuntu (Base)'
 LABEL org.opencontainers.image.url \
         https://github.com/devpow112/docker-base-ubuntu
 LABEL org.opencontainers.image.vendor devpow112
+LABEL org.opencontainers.image.created=${BUILD_DATETIME}
+LABEL org.opencontainers.image.revision=${BUILD_REVISION}
+LABEL org.opencontainers.image.version=${BUILD_VERSION}
