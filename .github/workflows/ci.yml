@@ -71,17 +71,17 @@ jobs:
         run: |
           BODY=$'## Build Details\n\n'
           for PLATFORM in ${PLATFORMS//,/ }; do
-            docker pull --platform=$PLATFORM ${{env.IMAGE_TAG}}
-            SIZE_OLD=$(docker inspect -f '{{.Size}}' ${{env.IMAGE_TAG}})
-            docker rmi -f ${{env.IMAGE_TEMP_TAG}}
-            docker pull --platform=$PLATFORM ${{env.IMAGE_TEMP_TAG}}
-            SIZE_NEW=$(docker inspect -f '{{.Size}}' ${{env.IMAGE_TEMP_TAG}})
+            docker pull --platform=$PLATFORM $IMAGE_TAG
+            SIZE_OLD=$(docker inspect -f '{{.Size}}' $IMAGE_TAG)
+            docker rmi -f $IMAGE_TEMP_TAG
+            docker pull --platform=$PLATFORM $IMAGE_TEMP_TAG
+            SIZE_NEW=$(docker inspect -f '{{.Size}}' $IMAGE_TEMP_TAG)
             DETAILS=$(
               docker image history --format \
-              'table | {{.Size}} | {{.CreatedBy}} |' ${{env.IMAGE_TEMP_TAG}}
+              'table | {{.Size}} | {{.CreatedBy}} |' $IMAGE_TEMP_TAG
             )
             DETAILS=${DETAILS#*$'\n'}
-            docker rmi -f ${{env.IMAGE_TEMP_TAG}}
+            docker rmi -f $IMAGE_TEMP_TAG
             SIZE=$(echo $SIZE_NEW | numfmt --to=iec --suffix=B --format='%.2f')
             SIZE_DIFF=$(
               echo "$(( SIZE_NEW - SIZE_OLD ))" |
@@ -108,10 +108,11 @@ jobs:
         if: github.event_name == 'pull_request'
       - name: Create build details comment
         if: github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v2.0.0
-        with:
-          issue-number: ${{github.event.pull_request.number}}
-          body: ${{steps.image-details.outputs.body}}
+        run: gh pr comment "$PULL_REQUEST_NUMBER" --body "$COMMENT_BODY"
+        env:
+          PULL_REQUEST_NUMBER: ${{github.event.pull_request.number}}
+          COMMENT_BODY: ${{steps.image-details.outputs.body}}
+          GITHUB_TOKEN: ${{github.token}}
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
@@ -167,7 +168,7 @@ jobs:
           docker run --rm
           -e 'TZ=America/Toronto'
           -e 'PUID=9999' -e 'PGID=9999' -e 'SGID=10000,10001'
-          ${{env.IMAGE_TEST_TAG}}
+          $IMAGE_TEST_TAG
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
