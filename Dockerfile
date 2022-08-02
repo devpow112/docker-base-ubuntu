@@ -1,4 +1,4 @@
-FROM ubuntu:focal-20220531
+FROM ubuntu:focal-20220801
 
 # set default input arguments
 ARG TARGETPLATFORM
