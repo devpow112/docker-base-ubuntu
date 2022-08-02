@@ -14,124 +14,78 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
-      contents: read
+      contents: write
       packages: write
     needs:
       - ci
     env:
       PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/riscv64,linux/s390x
       PACKAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
-      PACKAGE_LOCAL: localhost:5000/release/base-ubuntu
-    services:
-      registry:
-        image: registry
-        ports:
-          - 5000:5000
     steps:
       - name: Checkout
         uses: actions/checkout@v3.0.2
-        with:
-          fetch-depth: 0
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2.0.0
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2.0.0
         id: buildx
-        with:
-          driver-opts: network=host
       - name: Set up cache
         uses: actions/cache@v3.0.4
         with:
           path: /tmp/.buildx-cache
           key: ${{runner.os}}-buildx-${{github.sha}}
           restore-keys: ${{runner.os}}-buildx-
-      - name: Build image
-        uses: docker/build-push-action@v3.0.0
-        id: build
-        with:
-          context: .
-          builder: ${{steps.buildx.outputs.name}}
-          platforms: ${{env.PLATFORMS}}
-          tags: ${{env.PACKAGE_LOCAL}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-          push: true
       - name: Determine info
         id: info
         shell: bash
         run: |
-          DIGEST=$(
-            docker buildx imagetools inspect $PACKAGE_LOCAL |
-            grep Digest | cut -c12-
+          VERSION=$(grep -E '^FROM ubuntu:[a-z]+-[0-9]+$' Dockerfile)
+          VERSION=${VERSION##*:}
+          STREAM=${VERSION%-*}
+          URL=https://api.github.com/repos/${{github.repository}}
+          RELEASE_VERSION=$(
+            curl -H "Authorization: token $GITHUB_TOKEN" -sfSL "$URL/releases" |
+            jq -r "[.[].tag_name|select(startswith(\"$VERSION\"))]|max"
           )
-          DIGEST_LATEST=$(
-            docker buildx imagetools inspect $PACKAGE |
-            grep Digest | cut -c12-
-          )
-          echo "Digest New (Docker): $DIGEST"
-          echo "Digest Old (Docker): $DIGEST_LATEST"
-          if [ "$DIGEST" == "$DIGEST_LATEST" ]; then
-            echo 'Create Release (GitHub): false'
-            exit 0
-          fi
-          echo 'Create Release (GitHub): true'
-          DATE=$(date +%Y%m%d)
-          STREAM=$(
-            grep -E "^FROM ubuntu:[a-z]+-[0-9]+$" Dockerfile |
-            cut -d: -f2 | cut -d- -f1
-          )
-          URL=https://api.github.com/repos/${{github.repository}}/releases
-          RELEASES=$(curl -sSL $URL)
-          TAG_PREFIX="$STREAM-$DATE"
-          EXPRESSION="[.[].tag_name|select(startswith(\"$TAG_PREFIX\"))]"
-          EXPRESSION="$EXPRESSION|max//\"\"|split(\".\")[1]//\"-1\""
-          BUILD_NUMBER=$(echo "$RELEASES" | jq -r $EXPRESSION)
-          BUILD_NUMBER=$((BUILD_NUMBER + 1))
-          RELEASE_TAG="$TAG_PREFIX.$BUILD_NUMBER"
-          DOCKER_TAGS="$PACKAGE:latest"
-          DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$RELEASE_TAG"
-          RELEASE_COMMIT=$(echo ${GITHUB_REF#refs/heads/})
-          EXPRESSION="[.[]|select(.target_commitish==\"$RELEASE_COMMIT\")"
-          EXPRESSION="$EXPRESSION|{tag_name:.tag_name,created_at:.created_at}]"
-          EXPRESSION="$EXPRESSION|sort_by(.created_at,.tag_name)"
-          EXPRESSION="$EXPRESSION|max|.tag_name//\"\""
-          TAG=$(echo "$RELEASES" | jq -r $EXPRESSION)
-          if [ -z "$TAG" ]; then
-            COMMIT_RANGE='origin/main...HEAD'
+          if [[ -z "$RELEASE_VERSION" || "$RELEASE_VERSION" == 'null' ]]; then
+            RELEASE_VERSION="$VERSION.0"
           else
-            COMMIT_RANGE="$TAG...HEAD"
+            RELEASE_SHA=$(
+              curl -H "Authorization: token $GITHUB_TOKEN" \
+                -sfSL "$URL/git/refs/tags/$RELEASE_VERSION" |
+              jq -r '.object.sha'
+            )
+            if [[ "$RELEASE_SHA" == "$GITHUB_SHA" ]]; then
+              echo 'Uh oh...😧 something went wrong'
+              echo 'The current release is already at the current commit 😕'
+              exit 1
+            fi
+            BUILD_NUMBER=${RELEASE_VERSION##*.}
+            BUILD_NUMBER=$((BUILD_NUMBER + 1))
+            RELEASE_VERSION="$VERSION.$BUILD_NUMBER"
           fi
-          FORMAT_URL='https://github.com/${{github.repository}}/commit/%H'
-          FORMAT="* %s ([\`%h\`]($FORMAT_URL))"
-          RELEASE_BODY=$(git log $COMMIT_RANGE --pretty=format:"$FORMAT" | sort)
-          echo "Tag (Git): $RELEASE_TAG"
-          echo "Previous Tag (Git): $TAG"
-          echo "Commit Range (Git): $COMMIT_RANGE"
-          echo "Commitish (GitHub): $RELEASE_COMMIT"
-          echo 'Commit (Git): ${{github.sha}}'
-          echo "Tags (Docker): $DOCKER_TAGS"
-          echo -e "Release Notes (GitHub):\n$RELEASE_BODY"
-          if [ -z "$RELEASE_BODY" ]; then
-            echo 'Uh oh...😧 something went wrong when determining release info'
-            echo 'The digest changed but no changes were found 😕'
-            exit 1
+          RELEASE_BRANCH=${GITHUB_REF#refs/heads/}
+          DOCKER_TAGS="$PACKAGE:$RELEASE_VERSION"
+          DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$STREAM"
+          if [[ "$RELEASE_BRANCH" == 'main' ]]; then
+            DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:latest"
           fi
-          RELEASE_BODY="${RELEASE_BODY//'%'/'%25'}"
-          RELEASE_BODY="${RELEASE_BODY//$'\n'/'%0A'}"
-          RELEASE_BODY="${RELEASE_BODY//$'\r'/'%0D'}"
+          RELEASE_COMMIT="$GITHUB_SHA"
+          DATETIME=$(date --utc +%FT%T.%3NZ)
+          echo 'Create Release: true'
+          echo "Datetime: $DATETIME"
+          echo "Release Version: $RELEASE_VERSION"
+          echo "Release Branch: $RELEASE_BRANCH"
+          echo "Release Commit: $RELEASE_COMMIT"
+          echo "Docker Tags: $DOCKER_TAGS"
           echo '::set-output name=create-release::true'
-          echo "::set-output name=release-tag::$RELEASE_TAG"
+          echo "::set-output name=datetime::$DATETIME"
+          echo "::set-output name=release-version::$RELEASE_VERSION"
+          echo "::set-output name=release-branch::$RELEASE_BRANCH"
           echo "::set-output name=release-commit::$RELEASE_COMMIT"
-          echo "::set-output name=release-body::$RELEASE_BODY"
           echo "::set-output name=docker-tags::$DOCKER_TAGS"
-      - name: Create release
-        if: steps.info.outputs.create-release
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          tag: ${{steps.info.outputs.release-tag}}
-          body: ${{steps.info.outputs.release-body}}
-          commit: ${{steps.info.outputs.release-commit}}
-          token: ${{secrets.RELEASE_TOKEN}}
+        env:
+          GITHUB_TOKEN: ${{github.token}}
       - name: Login to registry
         if: steps.info.outputs.create-release
         uses: docker/login-action@v2.0.0
@@ -139,17 +93,35 @@ jobs:
           registry: ghcr.io
           username: ${{github.actor}}
           password: ${{github.token}}
-      - name: Push image
+      - name: Build & push image
         if: steps.info.outputs.create-release
         uses: docker/build-push-action@v3.0.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
           platforms: ${{env.PLATFORMS}}
+          build-args: |
+            BUILD_DATETIME=${{steps.info.outputs.datetime}}
+            BUILD_VERSION=${{steps.info.outputs.release-version}}
+            BUILD_REVISION=${{steps.info.outputs.release-commit}}
           tags: ${{steps.info.outputs.docker-tags}}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           push: true
+      - name: Create release
+        if: steps.info.outputs.create-release
+        run: |
+          git tag "$TAG" "$COMMIT"
+          git push origin --tags
+          gh release create "$TAG" \
+            --target "$BRANCH" \
+            --title "$TAG" \
+            --generate-notes
+        env:
+          TAG: ${{steps.info.outputs.release-version}}
+          BRANCH: ${{steps.info.outputs.release-branch}}
+          COMMIT: ${{steps.info.outputs.release-commit}}
+          GITHUB_TOKEN: ${{github.token}}
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
