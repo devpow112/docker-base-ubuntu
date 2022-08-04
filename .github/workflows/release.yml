@@ -43,16 +43,20 @@ jobs:
           VERSION=${VERSION##*:}
           STREAM=${VERSION%-*}
           URL=https://api.github.com/repos/${{github.repository}}
-          RELEASE_VERSION=$(
-            curl -H "Authorization: token $GITHUB_TOKEN" -sfSL "$URL/releases" |
-            jq -r "[.[].tag_name|select(startswith(\"$VERSION\"))]|max"
+          AUTHORIZATION_HEADER="Authorization: token $GITHUB_TOKEN"
+          FILTER=".[].tag_name|select(startswith(\"$VERSION\"))"
+          FILTER="$FILTER|sub(\"^$VERSION.\";\"\")|tonumber"
+          FILTER="[$FILTER]|max"
+          BUILD_NUMBER=$(
+            curl -H "$AUTHORIZATION_HEADER" -sfSL "$URL/releases" |
+            jq -r "$FILTER"
           )
-          if [[ -z "$RELEASE_VERSION" || "$RELEASE_VERSION" == 'null' ]]; then
-            RELEASE_VERSION="$VERSION.0"
+          if [[ -z "$BUILD_NUMBER" || "$BUILD_NUMBER" == 'null' ]]; then
+            BUILD_NUMBER='0'
           else
             RELEASE_SHA=$(
-              curl -H "Authorization: token $GITHUB_TOKEN" \
-                -sfSL "$URL/git/refs/tags/$RELEASE_VERSION" |
+              curl -H "$AUTHORIZATION_HEADER" \
+                -sfSL "$URL/git/refs/tags/$VERSION.$BUILD_NUMBER" |
               jq -r '.object.sha'
             )
             if [[ "$RELEASE_SHA" == "$GITHUB_SHA" ]]; then
@@ -60,7 +64,6 @@ jobs:
               echo 'The current release is already at the current commit 😕'
               exit 1
             fi
-            BUILD_NUMBER=${RELEASE_VERSION##*.}
             BUILD_NUMBER=$((BUILD_NUMBER + 1))
             RELEASE_VERSION="$VERSION.$BUILD_NUMBER"
           fi
