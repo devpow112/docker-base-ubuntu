@@ -1,6 +1,6 @@
 # Docker Ubuntu (Base)
 
-[![License]](LICENSE)
+[![License][License]](LICENSE)
 [![Release][Release Badge]][Release Workflow]
 
 Ubuntu docker container for use as base for other containers.
