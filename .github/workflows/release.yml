@@ -65,8 +65,8 @@ jobs:
               exit 1
             fi
             BUILD_NUMBER=$((BUILD_NUMBER + 1))
-            RELEASE_VERSION="$VERSION.$BUILD_NUMBER"
           fi
+          RELEASE_VERSION="$VERSION.$BUILD_NUMBER"          
           RELEASE_BRANCH=${GITHUB_REF#refs/heads/}
           DOCKER_TAGS="$PACKAGE:$RELEASE_VERSION"
           DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$STREAM"
