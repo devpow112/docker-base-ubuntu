@@ -64,7 +64,10 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           push: true
-      - name: Generate image details
+      - name: Hide outdated build details comments
+        uses: int128/hide-comment-action@v1.16.0
+        if: github.event_name == 'pull_request'
+      - name: Create build details comment
         id: image-details
         if: github.event_name == 'pull_request'
         run: |
@@ -106,21 +109,10 @@ jobs:
             BODY+="$DETAILS"
             BODY+=$'\n\n</details>\n\n'
           done
-          BODY=${BODY//'%'/'%25'}
-          BODY=${BODY//$'\n'/'%0A'}
-          BODY=${BODY//$'\r'/'%0D'}
-          echo "::set-output name=body::$BODY"
+          gh pr comment "$PULL_REQUEST_NUMBER" --body "$BODY"
         env:
           IMAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
-      - name: Hide outdated build details comments
-        uses: int128/hide-comment-action@v1.16.0
-        if: github.event_name == 'pull_request'
-      - name: Create build details comment
-        if: github.event_name == 'pull_request'
-        run: gh pr comment "$PULL_REQUEST_NUMBER" --body "$COMMENT_BODY"
-        env:
           PULL_REQUEST_NUMBER: ${{github.event.pull_request.number}}
-          COMMENT_BODY: ${{steps.image-details.outputs.body}}
           GITHUB_TOKEN: ${{github.token}}
       - name: Move cache
         run: |
