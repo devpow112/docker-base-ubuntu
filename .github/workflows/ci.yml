@@ -1,12 +1,11 @@
 name: CI
 on:
   workflow_call:
-env:
-  IMAGE_TAG: ghcr.io/${{github.repository_owner}}/base-ubuntu:focal
-  IMAGE_TEMP_TAG: localhost:5000/ci/base-ubuntu:latest
 defaults:
   run:
     shell: bash
+env:
+  IMAGE_TEMP_TAG: localhost:5000/ci/base-ubuntu:latest
 jobs:
   check-formatting-dockerfile:
     name: Check Formatting (Dockerfile)
@@ -69,6 +68,14 @@ jobs:
         id: image-details
         if: github.event_name == 'pull_request'
         run: |
+          VERSION=$(grep -E '^FROM ubuntu:[a-z]+-[0-9]+$' Dockerfile)
+          VERSION=${VERSION##*:}
+          STREAM=${VERSION%-*}
+          IMAGE_TAG=$IMAGE:$STREAM
+          EXISTS=$(docker buildx imagetools inspect $IMAGE_TAG 2> /dev/null)
+          if [[ "$EXISTS" == "" ]]; then
+            IMAGE_TAG=$IMAGE:latest
+          fi
           BODY=$'## Build Details\n\n'
           for PLATFORM in ${PLATFORMS//,/ }; do
             docker pull --platform=$PLATFORM $IMAGE_TAG
@@ -103,6 +110,8 @@ jobs:
           BODY=${BODY//$'\n'/'%0A'}
           BODY=${BODY//$'\r'/'%0D'}
           echo "::set-output name=body::$BODY"
+        env:
+          IMAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
       - name: Hide outdated build details comments
         uses: int128/hide-comment-action@v1.16.0
         if: github.event_name == 'pull_request'
@@ -123,13 +132,13 @@ jobs:
     timeout-minutes: 15
     needs:
       - build
-    env:
-      IMAGE_TEST_TAG: localhost:5000/ci/base-ubuntu-test:latest
     services:
       registry:
         image: registry
         ports:
           - 5000:5000
+    env:
+      IMAGE_TEST_TAG: localhost:5000/ci/base-ubuntu-test:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3.1.0
