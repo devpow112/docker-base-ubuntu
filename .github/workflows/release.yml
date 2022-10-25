@@ -4,6 +4,7 @@ on:
     branches: 
       - main # jammy
       - focal
+      - bionic
 concurrency: release
 permissions:
   contents: read
