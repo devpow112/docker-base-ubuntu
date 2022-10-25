@@ -24,7 +24,7 @@ updates:
       - docker
   - package-ecosystem: docker
     directory: /
-    target-branch: focal
+    target-branch: release/focal
     schedule:
       interval: daily
       time: '04:00'
@@ -36,7 +36,7 @@ updates:
       - docker
   - package-ecosystem: docker
     directory: /
-    target-branch: bionic
+    target-branch: release/bionic
     schedule:
       interval: daily
       time: '04:00'
