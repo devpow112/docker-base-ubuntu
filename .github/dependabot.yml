@@ -34,3 +34,15 @@ updates:
       - auto
       - dependencies
       - docker
+  - package-ecosystem: docker
+    directory: /
+    target-branch: bionic
+    schedule:
+      interval: daily
+      time: '04:00'
+      timezone: America/Toronto
+    rebase-strategy: auto
+    labels:
+      - auto
+      - dependencies
+      - docker
