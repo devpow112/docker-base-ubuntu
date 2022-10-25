@@ -1,7 +1,9 @@
 name: Release
 on:
   push:
-    branches: main
+    branches: 
+      - main
+      - release/*
 concurrency: release
 permissions:
   contents: read
