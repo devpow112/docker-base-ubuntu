@@ -2,7 +2,7 @@ name: CI
 on:
   workflow_call:
 env:
-  IMAGE_TAG: ghcr.io/${{github.repository_owner}}/base-ubuntu:latest
+  IMAGE_TAG: ghcr.io/${{github.repository_owner}}/base-ubuntu:focal
   IMAGE_TEMP_TAG: localhost:5000/ci/base-ubuntu:latest
 defaults:
   run:
