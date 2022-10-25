@@ -28,7 +28,7 @@ jobs:
             grep -oEi '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(\-[0-9])?$'
           )
           API=https://api.github.com/repos/just-containers/s6-overlay/releases
-          RELEASES=https://github.com/just-containers/s6-overlay/releases  
+          RELEASES=https://github.com/just-containers/s6-overlay/releases
           NEW_VERSION=$(curl -sSf "$API/latest" | jq -r .tag_name)
           NEW_VERSION=${NEW_VERSION#'v'}
           BUMP='Bump s6 overlay from'
@@ -36,9 +36,9 @@ jobs:
           UPDATE_BODY="$BUMP"
           UPDATE_BODY="$UPDATE_BODY [$OLD_VERSION]($RELEASES/v$OLD_VERSION)"
           UPDATE_BODY="$UPDATE_BODY to [$NEW_VERSION]($RELEASES/v$NEW_VERSION)."
-          echo "::set-output name=version::$NEW_VERSION"
-          echo "::set-output name=update-title::$UPDATE_TITLE"
-          echo "::set-output name=update-body:: $UPDATE_BODY"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "update-title=$UPDATE_TITLE" >> $GITHUB_OUTPUT
+          echo "update-body=$UPDATE_BODY" >> $GITHUB_OUTPUT
       - name: Update Dockerfile
         run: sed -i -E "s/$REGEX/\1$VERSION\2/" Dockerfile
         env:
