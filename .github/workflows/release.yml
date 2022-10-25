@@ -1,7 +1,7 @@
 name: Release
 on:
   push:
-    branches: 
+    branches:
       - main
       - release/*
 concurrency: release
@@ -68,7 +68,7 @@ jobs:
             fi
             BUILD_NUMBER=$((BUILD_NUMBER + 1))
           fi
-          RELEASE_VERSION="$VERSION.$BUILD_NUMBER"          
+          RELEASE_VERSION="$VERSION.$BUILD_NUMBER"
           RELEASE_BRANCH=${GITHUB_REF#refs/heads/}
           DOCKER_TAGS="$PACKAGE:$RELEASE_VERSION"
           DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$STREAM"
