@@ -4,6 +4,7 @@ on:
     branches: 
       - main # jammy
       - focal
+      - bionic
 permissions:
   contents: read
   pull-requests: write
