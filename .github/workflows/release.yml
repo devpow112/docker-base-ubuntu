@@ -1,7 +1,9 @@
 name: Release
 on:
   push:
-    branches: main
+    branches: 
+      - main # jammy
+      - focal
 concurrency: release
 permissions:
   contents: read

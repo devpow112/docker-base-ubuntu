@@ -1,7 +1,9 @@
 name: Pull Request
 on:
   pull_request:
-    branches: main
+    branches: 
+      - main # jammy
+      - focal
 permissions:
   contents: read
   pull-requests: write
