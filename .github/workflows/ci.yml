@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3.1.0
       - name: Check formatting
-        uses: hadolint/hadolint-action@v2.1.0
+        uses: hadolint/hadolint-action@v3.0.0
   check-formatting-markdown:
     name: Check Formatting (Markdown)
     runs-on: ubuntu-latest
