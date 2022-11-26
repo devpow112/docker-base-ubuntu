@@ -65,7 +65,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           push: true
       - name: Hide outdated build details comments
-        uses: int128/hide-comment-action@v1.16.0
+        uses: int128/hide-comment-action@v1.17.0
         if: github.event_name == 'pull_request'
       - name: Create build details comment
         id: image-details
