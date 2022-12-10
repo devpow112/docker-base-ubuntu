@@ -82,7 +82,7 @@ jobs:
           if [[ "$EXISTS" == "" ]]; then
             IMAGE_TAG=$IMAGE:latest
           fi
-          BODY='<!-- build details -->'
+          BODY=$'<!-- build details -->\n\n'
           BODY+=$'## Build Details\n\n'
           for PLATFORM in ${PLATFORMS//,/ }; do
             docker pull --platform=$PLATFORM $IMAGE_TAG
