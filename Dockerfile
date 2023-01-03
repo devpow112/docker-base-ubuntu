@@ -1,4 +1,4 @@
-FROM ubuntu:bionic-20221130
+FROM ubuntu:bionic-20221215
 
 # set default input arguments
 ARG TARGETPLATFORM
