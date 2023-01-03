@@ -121,7 +121,7 @@ jobs:
         if: steps.info.outputs.create-release
         run: |
           git tag "$TAG" "$COMMIT"
-          git push origin --tags
+          git push origin tag "$TAG"
           gh release create "$TAG" \
             --target "$BRANCH" \
             --title "$TAG" \
