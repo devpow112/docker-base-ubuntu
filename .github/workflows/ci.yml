@@ -67,6 +67,9 @@ jobs:
       - name: Hide outdated build details comments
         uses: int128/hide-comment-action@v1.21.0
         if: github.event_name == 'pull_request'
+        with:
+          author: github-actions
+          starts-with: <!-- build details -->
       - name: Create build details comment
         id: image-details
         if: github.event_name == 'pull_request'
@@ -79,7 +82,8 @@ jobs:
           if [[ "$EXISTS" == "" ]]; then
             IMAGE_TAG=$IMAGE:latest
           fi
-          BODY=$'## Build Details\n\n'
+          BODY=$'<!-- build details -->\n\n'
+          BODY+=$'## Build Details\n\n'
           for PLATFORM in ${PLATFORMS//,/ }; do
             docker pull --platform=$PLATFORM $IMAGE_TAG
             SIZE_OLD=$(docker inspect -f '{{.Size}}' $IMAGE_TAG)
