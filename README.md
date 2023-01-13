@@ -34,7 +34,7 @@ docker build \
 
 This container is intended to be used as a base for other containers. It will
 work as an interactive environment but doesn't provide much more then the
-standard [Ubuntu] container.
+standard [Ubuntu][Ubuntu Container] container.
 
 ### Base Container
 
@@ -66,4 +66,4 @@ docker run --it --rm \
 [Docker CLI]: https://docs.docker.com/engine/reference/commandline/build
 [locale]: https://manpages.ubuntu.com/manpages/jammy/man1/locale.1.html
 [s6 overlay]: https://github.com/just-containers/s6-overlay
-[Ubuntu]: https://hub.docker.com/_/ubuntu
+[Ubuntu Container]: https://hub.docker.com/_/ubuntu
