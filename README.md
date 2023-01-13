@@ -1,9 +1,9 @@
-# Docker Ubuntu (Base)
+# Ubuntu (Docker Base Container)
 
 [![License][License]](LICENSE)
 [![Release][Release Badge]][Release Workflow]
 
-Ubuntu docker container for use as base for other containers.
+[Ubuntu] container for use as base for other containers.
 
 ## Building
 
@@ -34,9 +34,9 @@ docker build \
 
 This container is intended to be used as a base for other containers. It will
 work as an interactive environment but doesn't provide much more then the
-standard [Ubuntu] container.
+standard [Ubuntu][Ubuntu Container] container.
 
-### Container Base
+### Base Container
 
 This is the intended usage.
 
@@ -61,8 +61,9 @@ docker run --it --rm \
 [License]: https://img.shields.io/github/license/devpow112/docker-base-ubuntu?label=License
 [Release Badge]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml/badge.svg?branch=main
 [Release Workflow]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml?query=branch%3Amain
+[Ubuntu]: https://ubuntu.com
 [Docker Buildx]: https://docs.docker.com/buildx/working-with-buildx
 [Docker CLI]: https://docs.docker.com/engine/reference/commandline/build
 [locale]: https://manpages.ubuntu.com/manpages/jammy/man1/locale.1.html
 [s6 overlay]: https://github.com/just-containers/s6-overlay
-[Ubuntu]: https://hub.docker.com/_/ubuntu
+[Ubuntu Container]: https://hub.docker.com/_/ubuntu
