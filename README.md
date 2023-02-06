@@ -19,8 +19,8 @@ docker build \
 ### Arguments
 
 - `TARGETPLATFORM` - Set by [Docker Buildx] automatically. Currently supported
-  platforms are `amd64`, `arm/v7`, `arm64`, `riscv64` and `s390x`. This should
-  be set automatically even if building locally using standard [Docker CLI].
+  platforms are `amd64`, `arm/v7`, `arm64` and `s390x`. This should be set
+  automatically even if building locally using standard [Docker CLI].
 - `LANGUAGE` - The language code that is set globally for the system. Defaults
   to `en_US`. See [locale] for more details.
 - `ENCODING` - Character encoding that is set globally for the system. Defaults
