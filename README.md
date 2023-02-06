@@ -41,7 +41,7 @@ standard [Ubuntu][Ubuntu Container] container.
 This is the intended usage.
 
 ```dockerfile
-FROM ghcr.io/devpow112/base-ubuntu:latest
+FROM ghcr.io/devpow112/base-ubuntu:bionic
 
 ...
 ```
@@ -54,7 +54,7 @@ testing with.
 ```console
 docker run --it --rm \
   --entrypoint /bin/bash \
-  ghcr.io/devpow112/base-ubuntu:latest
+  ghcr.io/devpow112/base-ubuntu:bionic
 ```
 
 <!-- links -->
