@@ -4,7 +4,7 @@ on:
     branches:
       - main
       - release/*
-concurrency: release
+concurrency: release-${{github.ref}}
 permissions:
   contents: read
 jobs:
@@ -125,6 +125,7 @@ jobs:
           gh release create "$TAG" \
             --target "$BRANCH" \
             --title "$TAG" \
+            --verify-tag \
             --generate-notes
         env:
           TAG: ${{steps.info.outputs.release-version}}
