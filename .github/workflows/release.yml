@@ -21,7 +21,7 @@ jobs:
     needs:
       - ci
     env:
-      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/riscv64,linux/s390x
+      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/s390x
       PACKAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
     steps:
       - name: Checkout
