@@ -3,10 +3,10 @@
   color: bdce3b
 - name: backport release/bionic
   description: Backport this pull request to the release/bionic branch
-  color: cb4c64
+  color: 8f4606
 - name: backport release/focal
   description: Backport this pull request to the release/focal branch
-  color: cb4c64
+  color: 8f4606
 - name: bash
   description: Pull requests that update bash code
   color: 4eaa25
