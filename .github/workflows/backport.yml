@@ -27,4 +27,4 @@ jobs:
           github_token: ${{secrets.AUTOMATION_TOKEN}}
           head_template: 'auto/backport-<%= number %>-to-<%= base %>'
           label_pattern: '^backport: (?<base>([^ ]+))$'
-          title_template: '[Backport: <%= base %>] <%= title %>'
+          title_template: '[Backport] <%= title %>'
