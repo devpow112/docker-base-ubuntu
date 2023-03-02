@@ -1,6 +1,12 @@
 - name: auto
   description: Opened by an automated process
   color: bdce3b
+- name: backport release/bionic
+  description: Backport this pull request to the release/bionic branch
+  color: cb4c64
+- name: backport release/focal
+  description: Backport this pull request to the release/focal branch
+  color: cb4c64
 - name: bash
   description: Pull requests that update bash code
   color: 4eaa25
