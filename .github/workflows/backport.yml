@@ -1,0 +1,27 @@
+name: Backport
+on:
+  pull_request_target:
+    types:
+      - closed
+      - labeled
+concurrency: ${{github.ref}}
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  backport:
+    name: Backport
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: >
+      github.event.pull_request.merged && (
+        github.event.action == 'closed' || (
+          github.event.action == 'labeled' &&
+          contains(github.event.label.name, 'backport')
+        )
+      )
+    steps:
+      - name: Backport
+        uses: tibdex/backport@v2.0.3
+        with:
+          github_token: ${{github.token}}
