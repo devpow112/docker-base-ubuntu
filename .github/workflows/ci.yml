@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/s390x,linux/ppc64le,linux/i386
+      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/s390x,linux/ppc64le,linux/386
     services:
       registry:
         image: registry
