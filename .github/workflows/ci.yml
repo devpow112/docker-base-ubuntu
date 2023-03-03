@@ -86,15 +86,21 @@ jobs:
           for PLATFORM in ${PLATFORMS//,/ }; do
             docker pull --platform=$PLATFORM $IMAGE_TAG
             SIZE_OLD=$(docker inspect -f '{{.Size}}' $IMAGE_TAG)
-            docker rmi -f $IMAGE_TEMP_TAG
-            docker pull --platform=$PLATFORM $IMAGE_TEMP_TAG
-            SIZE_NEW=$(docker inspect -f '{{.Size}}' $IMAGE_TEMP_TAG)
-            DETAILS=$(
-              docker image history --format \
-              'table | {{.Size}} | {{.CreatedBy}} |' $IMAGE_TEMP_TAG
-            )
+            if docker pull --platform=$PLATFORM $IMAGE_TEMP_TAG; then
+              SIZE_NEW=$(docker inspect -f '{{.Size}}' $IMAGE_TEMP_TAG)
+              DETAILS=$(
+                docker image history --format \
+                'table | {{.Size}} | {{.CreatedBy}} |' $IMAGE_TEMP_TAG
+              )
+              docker rmi -f $IMAGE_TEMP_TAG
+            else
+              SIZE_NEW=$SIZE_OLD
+              DETAILS=$(
+                docker image history --format \
+                'table | {{.Size}} | {{.CreatedBy}} |' $IMAGE_TAG
+              )
+            fi
             DETAILS=${DETAILS#*$'\n'}
-            docker rmi -f $IMAGE_TEMP_TAG
             SIZE=$(echo $SIZE_NEW | numfmt --to=iec --suffix=B --format='%.2f')
             SIZE_DIFF=$(
               echo "$(( SIZE_NEW - SIZE_OLD ))" |
