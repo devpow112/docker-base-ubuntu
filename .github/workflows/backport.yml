@@ -4,7 +4,6 @@ on:
     types:
       - closed
       - labeled
-concurrency: ${{github.ref}}
 permissions:
   contents: write
   pull-requests: write
