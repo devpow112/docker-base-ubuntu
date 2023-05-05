@@ -4,7 +4,7 @@ FROM ubuntu:jammy-20230425
 ARG TARGETPLATFORM
 ARG LANGUAGE=en_US
 ARG ENCODING=UTF-8
-ARG S6_OVERLAY_VERSION=3.1.4.2
+ARG S6_OVERLAY_VERSION=3.1.5.0
 
 # set default shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
