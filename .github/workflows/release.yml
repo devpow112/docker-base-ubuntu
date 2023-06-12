@@ -107,7 +107,7 @@ jobs:
           password: ${{github.token}}
       - name: Build & push image
         if: steps.info.outputs.create-release
-        uses: docker/build-push-action@v4.0.0
+        uses: docker/build-push-action@v4.1.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
