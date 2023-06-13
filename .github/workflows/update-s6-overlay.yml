@@ -18,7 +18,7 @@ jobs:
       REGEX: ^(ARG S6_OVERLAY_VERSION=)[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+(\-[0-9])?$
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3.5.3
       - name: Determine info
         shell: bash
         id: info
