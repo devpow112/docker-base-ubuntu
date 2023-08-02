@@ -24,7 +24,7 @@ jobs:
       )
     steps:
       - name: Backport
-        uses: tibdex/backport@v2.0.3
+        uses: tibdex/backport@v2.0.4
         with:
           github_token: ${{secrets.AUTOMATION_TOKEN}}
           head_template: 'auto/backport-<%= number %>-to-<%= base %>'
