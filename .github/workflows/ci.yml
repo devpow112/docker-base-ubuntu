@@ -57,7 +57,7 @@ jobs:
           key: ${{runner.os}}-buildx-${{github.sha}}
           restore-keys: ${{runner.os}}-buildx-
       - name: Build image
-        uses: docker/build-push-action@v4.1.1
+        uses: docker/build-push-action@v4.2.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
@@ -153,7 +153,7 @@ jobs:
           key: ${{runner.os}}-buildx-${{github.sha}}
           restore-keys: ${{runner.os}}-buildx-
       - name: Build image
-        uses: docker/build-push-action@v4.1.1
+        uses: docker/build-push-action@v4.2.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
@@ -162,7 +162,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           push: true
       - name: Build test image
-        uses: docker/build-push-action@v4.1.1
+        uses: docker/build-push-action@v4.2.0
         with:
           context: ./test
           builder: ${{steps.buildx.outputs.name}}
