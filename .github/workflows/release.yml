@@ -100,7 +100,7 @@ jobs:
           DELIMITER: '.'
       - name: Login to registry
         if: steps.info.outputs.create-release
-        uses: docker/login-action@v2.2.0
+        uses: docker/login-action@v3.0.0
         with:
           registry: ghcr.io
           username: ${{github.actor}}
