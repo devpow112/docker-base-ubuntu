@@ -1,10 +1,19 @@
 bash:
-  - root/etc/s6-overlay/scripts/*
+  - changed-files:
+    - any-glob-to-any-file:
+      - root/etc/s6-overlay/scripts/*
 docker:
-  - '**/Dockerfile'
-  - .dockerignore
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/Dockerfile'
+      - .dockerignore
 documentation:
-  - '**/*.md'
-  - LICENSE
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.md'
+      - .github/CODEOWNERS
+      - LICENSE
 github-actions:
-  - .github/workflows/*.yml
+  - changed-files:
+    - any-glob-to-any-file:
+      - .github/workflows/*.yml
