@@ -51,7 +51,7 @@ jobs:
         with:
           driver-opts: network=host
       - name: Set up cache
-        uses: actions/cache@v4.0.0
+        uses: actions/cache@v4.0.1
         with:
           path: /tmp/.buildx-cache
           key: ${{runner.os}}-buildx-${{github.sha}}
@@ -147,7 +147,7 @@ jobs:
         with:
           driver-opts: network=host
       - name: Set up cache
-        uses: actions/cache@v4.0.0
+        uses: actions/cache@v4.0.1
         with:
           path: /tmp/.buildx-cache
           key: ${{runner.os}}-buildx-${{github.sha}}
