@@ -23,18 +23,6 @@ updates:
       - auto
       - dependencies
       - github-actions
-  - package-ecosystem: github-actions
-    directory: /
-    target-branch: release/bionic
-    schedule:
-      interval: daily
-      time: '04:00'
-      timezone: America/Toronto
-    rebase-strategy: auto
-    labels:
-      - auto
-      - dependencies
-      - github-actions
   - package-ecosystem: docker
     directory: /
     schedule:
@@ -49,18 +37,6 @@ updates:
   - package-ecosystem: docker
     directory: /
     target-branch: release/focal
-    schedule:
-      interval: daily
-      time: '04:00'
-      timezone: America/Toronto
-    rebase-strategy: auto
-    labels:
-      - auto
-      - dependencies
-      - docker
-  - package-ecosystem: docker
-    directory: /
-    target-branch: release/bionic
     schedule:
       interval: daily
       time: '04:00'
