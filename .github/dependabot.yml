@@ -38,10 +38,6 @@ updates:
       - auto
       - dependencies
       - docker
-    groups:
-      docker-actions:
-        patterns:
-          - docker/*
   - package-ecosystem: docker
     directory: /
     target-branch: release/focal
@@ -54,8 +50,3 @@ updates:
       - auto
       - dependencies
       - docker
-    groups:
-      docker-actions:
-        patterns:
-          - docker/*
-  
