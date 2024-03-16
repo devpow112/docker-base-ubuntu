@@ -27,6 +27,10 @@ updates:
       - auto
       - dependencies
       - github-actions
+    groups:
+      docker-actions:
+        patterns:
+          - docker/*
   - package-ecosystem: docker
     directory: /
     schedule:
