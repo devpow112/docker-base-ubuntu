@@ -59,8 +59,8 @@ docker run --it --rm \
 
 <!-- links -->
 [License]: https://img.shields.io/github/license/devpow112/docker-base-ubuntu?label=License
-[Release Badge]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml/badge.svg?branch=main
-[Release Workflow]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml?query=branch%3Amain
+[Release Badge]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml/badge.svg?branch=release%2Ffocal
+[Release Workflow]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml?query=branch%3Arelease%2Ffocal
 [Ubuntu]: https://ubuntu.com
 [Docker Buildx]: https://docs.docker.com/buildx/working-with-buildx
 [Docker CLI]: https://docs.docker.com/engine/reference/commandline/build
