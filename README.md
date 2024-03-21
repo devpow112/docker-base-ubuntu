@@ -3,6 +3,10 @@
 [![License][License]](LICENSE)
 [![Release][Release Badge]][Release Workflow]
 
+> [!IMPORTANT]
+> This release is no longer maintained. **Bionic Beaver** was [end-of-life as
+> of April 2023].
+
 [Ubuntu] container for use as base for other containers.
 
 ## Building
@@ -60,11 +64,12 @@ docker run --it --rm \
 
 <!-- links -->
 [License]: https://img.shields.io/github/license/devpow112/docker-base-ubuntu?label=License
-[Release Badge]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml/badge.svg?branch=main
-[Release Workflow]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml?query=branch%3Amain
+[Release Badge]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml/badge.svg?branch=release%2Fbionic
+[Release Workflow]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml?query=branch%3Arelease%2Fbionic
 [Ubuntu]: https://ubuntu.com
 [Docker Buildx]: https://docs.docker.com/buildx/working-with-buildx
 [Docker CLI]: https://docs.docker.com/engine/reference/commandline/build
 [locale]: https://manpages.ubuntu.com/manpages/bionic/man1/locale.1.html
 [s6 overlay]: https://github.com/just-containers/s6-overlay
 [Ubuntu Container]: https://hub.docker.com/_/ubuntu
+[end-of-life as of April 2023]: https://endoflife.software/operating-systems/linux/ubuntu#18-04-lts
