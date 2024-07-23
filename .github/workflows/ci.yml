@@ -42,11 +42,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.1.7
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.1.0
+        uses: docker/setup-qemu-action@v3.2.0
         with:
           platforms: ${{env.PLATFORMS}}
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.4.0
+        uses: docker/setup-buildx-action@v3.5.0
         id: buildx
         with:
           driver-opts: network=host
@@ -57,7 +57,7 @@ jobs:
           key: ${{runner.os}}-buildx-${{github.sha}}
           restore-keys: ${{runner.os}}-buildx-
       - name: Build image
-        uses: docker/build-push-action@v6.4.1
+        uses: docker/build-push-action@v6.5.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
@@ -142,7 +142,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.1.7
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.4.0
+        uses: docker/setup-buildx-action@v3.5.0
         id: buildx
         with:
           driver-opts: network=host
@@ -153,7 +153,7 @@ jobs:
           key: ${{runner.os}}-buildx-${{github.sha}}
           restore-keys: ${{runner.os}}-buildx-
       - name: Build image
-        uses: docker/build-push-action@v6.4.1
+        uses: docker/build-push-action@v6.5.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
@@ -162,7 +162,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           push: true
       - name: Build test image
-        uses: docker/build-push-action@v6.4.1
+        uses: docker/build-push-action@v6.5.0
         with:
           context: ./test
           builder: ${{steps.buildx.outputs.name}}
