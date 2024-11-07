@@ -41,7 +41,7 @@ standard [Ubuntu][Ubuntu Container] container.
 This is the intended usage.
 
 ```dockerfile
-FROM ghcr.io/devpow112/base-ubuntu:latest
+FROM ghcr.io/devpow112/base-ubuntu:jammy
 
 ...
 ```
@@ -54,13 +54,13 @@ testing with.
 ```console
 docker run --it --rm \
   --entrypoint /bin/bash \
-  ghcr.io/devpow112/base-ubuntu:latest
+  ghcr.io/devpow112/base-ubuntu:jammy
 ```
 
 <!-- links -->
 [License]: https://img.shields.io/github/license/devpow112/docker-base-ubuntu?label=License
-[Release Badge]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml/badge.svg?branch=main
-[Release Workflow]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml?query=branch%3Amain
+[Release Badge]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml/badge.svg?branch=release%2Fjammy
+[Release Workflow]: https://github.com/devpow112/docker-base-ubuntu/actions/workflows/release.yml?query=branch%3Arelease%2Fjammy
 [Ubuntu]: https://ubuntu.com
 [Docker Buildx]: https://docs.docker.com/buildx/working-with-buildx
 [Docker CLI]: https://docs.docker.com/engine/reference/commandline/build
