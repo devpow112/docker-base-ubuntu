@@ -3,7 +3,7 @@
 [![License][License]](LICENSE)
 [![Release][Release Badge]][Release Workflow]
 
-> [!IMPORTANT]
+> [!WARNING]
 > This release is no longer maintained. **Bionic Beaver** was [end-of-life as
 > of April 2023].
 
