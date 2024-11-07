@@ -117,8 +117,8 @@ jobs:
             BUILD_VERSION=${{steps.info.outputs.release-version}}
             BUILD_REVISION=${{steps.info.outputs.release-commit}}
           tags: ${{steps.info.outputs.docker-tags}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
       - name: Create release
         if: steps.info.outputs.create-release
@@ -135,7 +135,3 @@ jobs:
           BRANCH: ${{steps.info.outputs.release-branch}}
           COMMIT: ${{steps.info.outputs.release-commit}}
           GITHUB_TOKEN: ${{github.token}}
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache

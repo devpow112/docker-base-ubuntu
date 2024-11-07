@@ -63,8 +63,8 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           tags: ${{env.IMAGE_TEMP_TAG}}
           platforms: ${{env.PLATFORMS}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
       - name: Hide outdated build details comments
         uses: int128/hide-comment-action@v1.34.0
@@ -125,10 +125,6 @@ jobs:
           IMAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
           PULL_REQUEST_NUMBER: ${{github.event.pull_request.number}}
           GITHUB_TOKEN: ${{github.token}}
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -162,8 +158,8 @@ jobs:
           context: .
           builder: ${{steps.buildx.outputs.name}}
           tags: ${{env.IMAGE_TEMP_TAG}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
       - name: Build test image
         uses: docker/build-push-action@v6.9.0
@@ -172,8 +168,8 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           build-args: IMAGE_TAG=${{env.IMAGE_TEMP_TAG}}
           tags: ${{env.IMAGE_TEST_TAG}}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           load: true
       - name: Test
         run: >
@@ -181,7 +177,3 @@ jobs:
           -e 'TZ=America/Toronto'
           -e 'PUID=9999' -e 'PGID=9999' -e 'SGID=10000,10001'
           $IMAGE_TEST_TAG
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
