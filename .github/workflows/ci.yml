@@ -79,8 +79,12 @@ jobs:
           VERSION=${VERSION##*:}
           STREAM=${VERSION%-*}
           IMAGE_TAG=$IMAGE:$STREAM
-          EXISTS=$(docker buildx imagetools inspect $IMAGE_TAG 2> /dev/null)
-          if [[ "$EXISTS" == "" ]]; then
+          set +e
+          EXISTS_OUTPUT=$(docker buildx imagetools inspect $IMAGE_TAG 2> /dev/null)
+          EXISTS_RESULT="$?"
+          set -e
+          if [[ "$EXISTS_OUTPUT" == "" || "$EXISTS_RESULT" -ne 0  ]]; then
+            echo "Stream tag '$STREAM' does not exist, using latest tag"
             IMAGE_TAG=$IMAGE:latest
           fi
           BODY=$'<!-- build details -->\n\n'
