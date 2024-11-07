@@ -64,6 +64,6 @@ docker run --it --rm \
 [Ubuntu]: https://ubuntu.com
 [Docker Buildx]: https://docs.docker.com/buildx/working-with-buildx
 [Docker CLI]: https://docs.docker.com/engine/reference/commandline/build
-[locale]: https://manpages.ubuntu.com/manpages/jammy/man1/locale.1.html
+[locale]: https://manpages.ubuntu.com/manpages/noble/man1/locale.1.html
 [s6 overlay]: https://github.com/just-containers/s6-overlay
 [Ubuntu Container]: https://hub.docker.com/_/ubuntu
