@@ -23,10 +23,16 @@ jobs:
         )
       )
     steps:
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v1.11.0
+        with:
+          app-id: ${{secrets.GH_APP_ID}}
+          private-key: ${{secrets.GH_APP_PRIVATE_KEY}}
       - name: Backport
         uses: tibdex/backport@v2.0.4
         with:
-          github_token: ${{secrets.AUTOMATION_TOKEN}}
+          github_token: ${{steps.app-token.outputs.token}}
           head_template: 'auto/backport-<%= number %>-to-<%= base %>'
           label_pattern: '^backport: (?<base>([^ ]+))$'
           title_template: '[Backport] <%= title %>'
