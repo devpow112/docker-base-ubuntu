@@ -90,7 +90,7 @@ jobs:
       - name: Test
         run: >
           for PLATFORM in ${PLATFORMS//,/ }; do
-            echo '::group::Testing: $PLATFORM'
+            echo "::group::Testing: $PLATFORM"
             docker run --rm \
               --platform "$PLATFORM" \
               -e 'TZ=America/Toronto' \
