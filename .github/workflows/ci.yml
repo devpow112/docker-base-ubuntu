@@ -30,9 +30,7 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/s390x,linux/ppc64le
+    timeout-minutes: 30
     services:
       registry:
         image: registry
@@ -41,27 +39,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
+      - name: Determine info
+        id: info
+        run: |
+          PLATFORMS=(
+            linux/amd64
+            linux/arm/v7
+            linux/arm64
+            linux/s390x
+            linux/ppc64le
+          )
+          SAVE_IFS="$IFS"
+          IFS=","
+          PLATFORMS="${PLATFORMS[*]}"
+          IFS="$SAVE_IFS"
+          echo "platforms=$PLATFORMS" >> $GITHUB_OUTPUT
+          echo "base-image-tag=$TEMP_IMAGE:base-image" >> $GITHUB_OUTPUT
+          echo "test-image-tag=$TEMP_IMAGE:test" >> $GITHUB_OUTPUT
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.2.0
         with:
-          platforms: ${{env.PLATFORMS}}
+          platforms: ${{steps.info.outputs.platforms}}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.8.0
         id: buildx
         with:
           driver-opts: network=host
-      - name: Determine info
-        id: info
-        run: |
-          echo "base-image-tag=$TEMP_IMAGE:base-image" >> $GITHUB_OUTPUT
-          echo "test-image-tag=$TEMP_IMAGE:test" >> $GITHUB_OUTPUT
       - name: Build image
         uses: docker/build-push-action@v6.10.0
-        id: image
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
-          platforms: ${{env.PLATFORMS}}
+          platforms: ${{steps.info.outputs.platforms}}
           tags: ${{steps.info.outputs.base-image-tag}}
           cache-from: type=gha,scope=nocachefilter
           cache-to: type=gha,scope=nocachefilter,mode=max
@@ -73,7 +82,7 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           build-contexts: |
             base-image:ci=docker-image://${{steps.info.outputs.base-image-tag}}
-          platforms: ${{env.PLATFORMS}}
+          platforms: ${{steps.info.outputs.platforms}}
           tags: ${{steps.info.outputs.test-image-tag}}
           cache-from: type=gha,scope=nocachefilter
           cache-to: type=gha,scope=nocachefilter,mode=max
@@ -83,9 +92,9 @@ jobs:
           for PLATFORM in ${PLATFORMS//,/ }; do
             echo '::group::Testing: $PLATFORM'
             docker run --rm \
-              --platform "$PLATFORM"
-              -e 'TZ=America/Toronto'
-              -e 'PUID=9999' -e 'PGID=9999' -e 'SGID=10000,10001'
+              --platform "$PLATFORM" \
+              -e 'TZ=America/Toronto' \
+              -e 'PUID=9999' -e 'PGID=9999' -e 'SGID=10000,10001' \
               "$TEST_IMAGE_TAG"
             echo '::endgroup::'
           done
