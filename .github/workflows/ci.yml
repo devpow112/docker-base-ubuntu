@@ -72,8 +72,8 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           platforms: ${{steps.info.outputs.platforms}}
           tags: ${{steps.info.outputs.base-image-tag}}
-          cache-from: type=gha,scope=nocachefilter
-          cache-to: type=gha,scope=nocachefilter,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
       - name: Build test image
         uses: docker/build-push-action@v6.10.0
@@ -84,8 +84,8 @@ jobs:
             base-image:ci=docker-image://${{steps.info.outputs.base-image-tag}}
           platforms: ${{steps.info.outputs.platforms}}
           tags: ${{steps.info.outputs.test-image-tag}}
-          cache-from: type=gha,scope=nocachefilter
-          cache-to: type=gha,scope=nocachefilter,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
       - name: Test
         run: >
