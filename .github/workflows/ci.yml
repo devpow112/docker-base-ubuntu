@@ -100,6 +100,7 @@ jobs:
           done
         env:
           TEST_IMAGE_TAG: ${{steps.info.outputs.test-image-tag}}
+          PLATFORMS: ${{steps.info.outputs.platforms}}
       # - name: Hide outdated build details comment
       #   uses: int128/hide-comment-action@v1.37.0
       #   if: github.event_name == 'pull_request'
