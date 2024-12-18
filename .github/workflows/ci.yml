@@ -87,10 +87,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
-      - name: Test
+      - name: Run tests
         run: >
           for PLATFORM in ${PLATFORMS//,/ }; do
-            echo "::group::Testing: $PLATFORM"
+            echo "::group::Run test ($PLATFORM)"
             docker run --rm \
               --platform "$PLATFORM" \
               -e 'TZ=America/Toronto' \
