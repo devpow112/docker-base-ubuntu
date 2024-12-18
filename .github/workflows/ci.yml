@@ -4,8 +4,6 @@ on:
 defaults:
   run:
     shell: bash
-env:
-  IMAGE_TEMP_TAG: localhost:5000/ci/base-ubuntu:latest
 jobs:
   check-formatting-dockerfile:
     name: Check Formatting (Dockerfile)
@@ -27,12 +25,10 @@ jobs:
         uses: davidanson/markdownlint-cli2-action@v18.0.0
         with:
           globs: '**/*.md'
-  build:
-    name: Build
+  build-and-test:
+    name: Build & Test
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/s390x,linux/ppc64le
+    timeout-minutes: 30
     services:
       registry:
         image: registry
@@ -41,10 +37,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
+      - name: Determine info
+        id: info
+        run: |
+          PLATFORMS=(
+            linux/amd64
+            linux/arm/v7
+            linux/arm64
+            linux/s390x
+            linux/ppc64le
+          )
+          SAVE_IFS="$IFS"
+          IFS=","
+          PLATFORMS="${PLATFORMS[*]}"
+          IFS="$SAVE_IFS"
+          TEMP_IMAGE='localhost:5000/base-ubuntu'
+          echo "platforms=$PLATFORMS" >> $GITHUB_OUTPUT
+          echo "base-image-tag=$TEMP_IMAGE:base-image" >> $GITHUB_OUTPUT
+          echo "test-image-tag=$TEMP_IMAGE:test" >> $GITHUB_OUTPUT
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.2.0
         with:
-          platforms: ${{env.PLATFORMS}}
+          platforms: ${{steps.info.outputs.platforms}}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.8.0
         id: buildx
@@ -55,11 +69,38 @@ jobs:
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
-          tags: ${{env.IMAGE_TEMP_TAG}}
-          platforms: ${{env.PLATFORMS}}
+          platforms: ${{steps.info.outputs.platforms}}
+          tags: ${{steps.info.outputs.base-image-tag}}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
+      - name: Build test image
+        uses: docker/build-push-action@v6.10.0
+        with:
+          context: ./test
+          builder: ${{steps.buildx.outputs.name}}
+          build-contexts: |
+            base-image:ci=docker-image://${{steps.info.outputs.base-image-tag}}
+          platforms: ${{steps.info.outputs.platforms}}
+          tags: ${{steps.info.outputs.test-image-tag}}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+      - name: Run tests
+        run: >
+          for PLATFORM in ${PLATFORMS//,/ }; do
+            echo "::group::Run test ($PLATFORM)"
+            docker pull --platform "$PLATFORM" "$TEST_IMAGE_TAG" > /dev/null
+            docker run --rm \
+              --platform "$PLATFORM" \
+              -e 'TZ=America/Toronto' \
+              -e 'PUID=9999' -e 'PGID=9999' -e 'SGID=10000,10001' \
+              "$TEST_IMAGE_TAG"
+            echo '::endgroup::'
+          done
+        env:
+          TEST_IMAGE_TAG: ${{steps.info.outputs.test-image-tag}}
+          PLATFORMS: ${{steps.info.outputs.platforms}}
       - name: Hide outdated build details comments
         uses: int128/hide-comment-action@v1.37.0
         if: github.event_name == 'pull_request'
@@ -72,26 +113,28 @@ jobs:
           VERSION=$(grep -E '^FROM ubuntu:[a-z]+-[0-9]+$' Dockerfile)
           VERSION=${VERSION##*:}
           STREAM=${VERSION%-*}
-          IMAGE_TAG=$IMAGE:$STREAM
+          REMOTE_IMAGE_TAG=$REMOTE_IMAGE:$STREAM
           set +e
-          EXISTS_OUTPUT=$(docker buildx imagetools inspect $IMAGE_TAG 2> /dev/null)
+          EXISTS_OUTPUT=$(
+            docker buildx imagetools inspect $REMOTE_IMAGE_TAG 2> /dev/null
+          )
           EXISTS_RESULT="$?"
           set -e
           if [[ "$EXISTS_OUTPUT" == "" || "$EXISTS_RESULT" -ne 0  ]]; then
             echo "Stream tag '$STREAM' does not exist, using latest tag"
-            IMAGE_TAG=$IMAGE:latest
+            REMOTE_IMAGE_TAG=$REMOTE_IMAGE:latest
           fi
           BODY=$'<!-- build details -->\n\n'
           BODY+=$'## Build Details\n\n'
           for PLATFORM in ${PLATFORMS//,/ }; do
-            docker pull --platform=$PLATFORM $IMAGE_TEMP_TAG
-            SIZE_NEW=$(docker inspect -f '{{.Size}}' $IMAGE_TEMP_TAG)
+            docker pull --platform=$PLATFORM $LOCAL_IMAGE_TAG
+            SIZE_NEW=$(docker inspect -f '{{.Size}}' $LOCAL_IMAGE_TAG)
             DETAILS=$(
               docker image history --format \
-              'table | {{.Size}} | {{.CreatedBy}} |' $IMAGE_TEMP_TAG
+              'table | {{.Size}} | {{.CreatedBy}} |' $LOCAL_IMAGE_TAG
             )
             DETAILS=${DETAILS#*$'\n'}
-            docker rmi -f $IMAGE_TEMP_TAG
+            docker rmi -f $LOCAL_IMAGE_TAG
             if docker pull --platform=$PLATFORM $IMAGE_TAG; then
               SIZE_OLD=$(docker inspect -f '{{.Size}}' $IMAGE_TAG)
             else
@@ -116,52 +159,8 @@ jobs:
           done
           gh pr comment "$PULL_REQUEST_NUMBER" --body "$BODY"
         env:
-          IMAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
+          REMOTE_IMAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
+          LOCAL_IMAGE_TAG: ${{steps.info.outputs.base-image-tag}}
+          PLATFORMS: ${{steps.info.outputs.platforms}}
           PULL_REQUEST_NUMBER: ${{github.event.pull_request.number}}
           GITHUB_TOKEN: ${{github.token}}
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs:
-      - build
-    services:
-      registry:
-        image: registry
-        ports:
-          - 5000:5000
-    env:
-      IMAGE_TEST_TAG: localhost:5000/ci/base-ubuntu-test:latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4.2.2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.8.0
-        id: buildx
-        with:
-          driver-opts: network=host
-      - name: Build image
-        uses: docker/build-push-action@v6.10.0
-        with:
-          context: .
-          builder: ${{steps.buildx.outputs.name}}
-          tags: ${{env.IMAGE_TEMP_TAG}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          push: true
-      - name: Build test image
-        uses: docker/build-push-action@v6.10.0
-        with:
-          context: ./test
-          builder: ${{steps.buildx.outputs.name}}
-          build-args: IMAGE_TAG=${{env.IMAGE_TEMP_TAG}}
-          tags: ${{env.IMAGE_TEST_TAG}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          load: true
-      - name: Test
-        run: >
-          docker run --rm
-          -e 'TZ=America/Toronto'
-          -e 'PUID=9999' -e 'PGID=9999' -e 'SGID=10000,10001'
-          $IMAGE_TEST_TAG
