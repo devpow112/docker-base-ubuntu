@@ -2,6 +2,8 @@
 
 set -e
 
+echo "Platform: $(uname -m)"
+
 result=0
 
 echo "=> Check '/.base-apply-permissions-complete' exists"
