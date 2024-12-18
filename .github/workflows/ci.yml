@@ -159,5 +159,6 @@ jobs:
         env:
           REMOTE_IMAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
           LOCAL_IMAGE_TAG: ${{steps.info.outputs.base-image-tag}}
+          PLATFORMS: ${{steps.info.outputs.platforms}}
           PULL_REQUEST_NUMBER: ${{github.event.pull_request.number}}
           GITHUB_TOKEN: ${{github.token}}
