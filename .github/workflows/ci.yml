@@ -3,9 +3,6 @@ on: workflow_call
 defaults:
   run:
     shell: bash
-env:
-  TEMP_IMAGE: localhost:5000/base-ubuntu
-  ARTIFACT_PREFIX: base-ubuntu-ci
 jobs:
   check-formatting-dockerfile:
     name: Check Formatting (Dockerfile)
@@ -53,6 +50,7 @@ jobs:
           IFS=","
           PLATFORMS="${PLATFORMS[*]}"
           IFS="$SAVE_IFS"
+          TEMP_IMAGE='localhost:5000/base-ubuntu'
           echo "platforms=$PLATFORMS" >> $GITHUB_OUTPUT
           echo "base-image-tag=$TEMP_IMAGE:base-image" >> $GITHUB_OUTPUT
           echo "test-image-tag=$TEMP_IMAGE:test" >> $GITHUB_OUTPUT
