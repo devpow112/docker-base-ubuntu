@@ -89,6 +89,7 @@ jobs:
         run: >
           for PLATFORM in ${PLATFORMS//,/ }; do
             echo "::group::Run test ($PLATFORM)"
+            docker pull --platform "$PLATFORM" "$TEST_IMAGE_TAG" > /dev/null
             docker run --rm \
               --platform "$PLATFORM" \
               -e 'TZ=America/Toronto' \
