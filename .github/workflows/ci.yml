@@ -101,85 +101,65 @@ jobs:
         env:
           TEST_IMAGE_TAG: ${{steps.info.outputs.test-image-tag}}
           PLATFORMS: ${{steps.info.outputs.platforms}}
-      # - name: Hide outdated build details comment
-      #   uses: int128/hide-comment-action@v1.37.0
-      #   if: github.event_name == 'pull_request'
-      #   with:
-      #     starts-with: <!-- build details ${{matrix.platform}} -->
-      # - name: Determine build details
-      #   id: details
-      #   if: github.event_name == 'pull_request'
-      #   run: |
-      #     VERSION=$(grep -E '^FROM ubuntu:[a-z]+-[0-9]+$' Dockerfile)
-      #     VERSION=${VERSION##*:}
-      #     STREAM=${VERSION%-*}
-      #     CURRENT_IMAGE_TAG=$CURRENT_IMAGE:$STREAM
-      #     set +e
-      #     EXISTS_OUTPUT=$(
-      #       docker buildx imagetools inspect $CURRENT_IMAGE_TAG 2> /dev/null
-      #     )
-      #     EXISTS_RESULT="$?"
-      #     set -e
-      #     if [[ "$EXISTS_OUTPUT" == "" || "$EXISTS_RESULT" -ne 0 ]]; then
-      #       echo "Stream tag '$STREAM' does not exist, using latest tag"
-      #       CURRENT_IMAGE_TAG=$CURRENT_IMAGE:latest
-      #     fi
-      #     docker pull --platform=$PLATFORM $NEW_IMAGE_TAG
-      #     SIZE_NEW=$(docker inspect -f '{{.Size}}' $NEW_IMAGE_TAG)
-      #     DETAILS=$(
-      #       docker image history --format \
-      #       'table | {{.Size}} | {{.CreatedBy}} |' $NEW_IMAGE_TAG
-      #     )
-      #     DETAILS=${DETAILS#*$'\n'}
-      #     docker rmi -f $NEW_IMAGE_TAG
-      #     if docker pull --platform=$PLATFORM $CURRENT_IMAGE_TAG; then
-      #       SIZE_CURRENT=$(docker inspect -f '{{.Size}}' $CURRENT_IMAGE_TAG)
-      #     else
-      #       SIZE_CURRENT=$SIZE_NEW
-      #     fi
-      #     echo "Size new: $SIZE_NEW"
-      #     echo "Size old: $SIZE_CURRENT"
-      #     if (( $SIZE_NEW == $SIZE_CURRENT )); then
-      #       echo 'changes=false' >> $GITHUB_OUTPUT
-      #       exit 0
-      #     fi
-      #     SIZE_DIFF=$(( SIZE_NEW - SIZE_CURRENT ))
-      #     SIZE_NEW_FORMATTED=$(
-      #       echo $SIZE_NEW | numfmt --to=iec --suffix=B --format='%.2f'
-      #     )
-      #     SIZE_CURRENT_FORMATTED=$(
-      #       echo $SIZE_CURRENT | numfmt --to=iec --suffix=B --format='%.2f'
-      #     )
-      #     SIZE_DIFF_FORMATTED=$(
-      #       echo "$(( SIZE_NEW - SIZE_CURRENT ))" |
-      #       numfmt --to=iec --suffix=B --format='%.2f'
-      #     )
-      #     if (( $SIZE_NEW > $SIZE_CURRENT )); then
-      #       SIZE_DIFF_FORMATTED="+$SIZE_DIFF_FORMATTED"
-      #     fi
-      #     echo 'changes=true' >> $GITHUB_OUTPUT
-      #     echo "size-new-raw=$SIZE_NEW" >> $GITHUB_OUTPUT
-      #     echo "size-new-formatted=$SIZE_NEW_FORMATTED" >> $GITHUB_OUTPUT
-      #     echo "size-current-raw=$SIZE_CURRENT" >> $GITHUB_OUTPUT
-      #     echo "size-current-formatted=$SIZE_CURRENT_FORMATTED" >> $GITHUB_OUTPUT
-      #     echo "size-difference-raw=$SIZE_DIFF" >> $GITHUB_OUTPUT
-      #     echo "size-difference-formatted=$SIZE_DIFF_FORMATTED" >> $GITHUB_OUTPUT
-      #   env:
-      #     PLATFORM: ${{matrix.platform}}
-      #     CURRENT_IMAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
-      #     NEW_IMAGE_TAG: localhost:5000/base-image:ci
-      # - name: Post build details comment
-      #   uses: peter-evans/create-or-update-comment@v4.0.0
-      #   if: >
-      #     github.event_name == 'pull_request' &&
-      #     steps.details.outputs.changes == 'true'
-      #   with:
-      #     issue-number: ${{github.event.pull_request.number}}
-      #     body: |
-      #       <!-- build details ${{matrix.platform}} -->
-
-      #       ## Build Details (`${{matrix.platform}}`)
-
-      #       | | Difference | New | Current |
-      #       | --- | --- | --- | --- |
-      #       | Size | `${{steps.details.outputs.size-difference-formatted}}` (`${{steps.details.outputs.size-difference-raw}}B`) | `${{steps.details.outputs.size-new-formatted}}` (`${{steps.details.outputs.size-new-raw}}B`) | `${{steps.details.outputs.size-current-formatted}}` (`${{steps.details.outputs.size-current-raw}}B`) |
+      - name: Hide outdated build details comments
+        uses: int128/hide-comment-action@v1.37.0
+        if: github.event_name == 'pull_request'
+        with:
+          starts-with: <!-- build details -->
+      - name: Create build details comment
+        id: image-details
+        if: github.event_name == 'pull_request'
+        run: |
+          VERSION=$(grep -E '^FROM ubuntu:[a-z]+-[0-9]+$' Dockerfile)
+          VERSION=${VERSION##*:}
+          STREAM=${VERSION%-*}
+          REMOTE_IMAGE_TAG=$REMOTE_IMAGE:$STREAM
+          set +e
+          EXISTS_OUTPUT=$(
+            docker buildx imagetools inspect $REMOTE_IMAGE_TAG 2> /dev/null
+          )
+          EXISTS_RESULT="$?"
+          set -e
+          if [[ "$EXISTS_OUTPUT" == "" || "$EXISTS_RESULT" -ne 0  ]]; then
+            echo "Stream tag '$STREAM' does not exist, using latest tag"
+            REMOTE_IMAGE_TAG=$REMOTE_IMAGE:latest
+          fi
+          BODY=$'<!-- build details -->\n\n'
+          BODY+=$'## Build Details\n\n'
+          for PLATFORM in ${PLATFORMS//,/ }; do
+            docker pull --platform=$PLATFORM $LOCAL_IMAGE_TAG
+            SIZE_NEW=$(docker inspect -f '{{.Size}}' $LOCAL_IMAGE_TAG)
+            DETAILS=$(
+              docker image history --format \
+              'table | {{.Size}} | {{.CreatedBy}} |' $LOCAL_IMAGE_TAG
+            )
+            DETAILS=${DETAILS#*$'\n'}
+            docker rmi -f $LOCAL_IMAGE_TAG
+            if docker pull --platform=$PLATFORM $IMAGE_TAG; then
+              SIZE_OLD=$(docker inspect -f '{{.Size}}' $IMAGE_TAG)
+            else
+              SIZE_OLD=$SIZE_NEW
+            fi
+            SIZE=$(echo $SIZE_NEW | numfmt --to=iec --suffix=B --format='%.2f')
+            SIZE_DIFF=$(
+              echo "$(( SIZE_NEW - SIZE_OLD ))" |
+              numfmt --to=iec --suffix=B --format='%.2f'
+            )
+            if (( $SIZE_NEW > $SIZE_OLD )); then
+              SIZE="$SIZE \`+$SIZE_DIFF\`"
+            elif (( $SIZE_NEW < $SIZE_OLD )); then
+              SIZE="$SIZE \`$SIZE_DIFF\`"
+            fi
+            BODY+="\`$PLATFORM\`: **$SIZE**"
+            BODY+=$'\n\n<details>\n<summary>Layer Breakdown</summary>\n\n'
+            BODY+=$'| Size | Created By |\n'
+            BODY+=$'| ---- | ---------- |\n'
+            BODY+="$DETAILS"
+            BODY+=$'\n\n</details>\n\n'
+          done
+          gh pr comment "$PULL_REQUEST_NUMBER" --body "$BODY"
+        env:
+          REMOTE_IMAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
+          LOCAL_IMAGE_TAG: ${{steps.info.outputs.base-image-tag}}
+          PULL_REQUEST_NUMBER: ${{github.event.pull_request.number}}
+          GITHUB_TOKEN: ${{github.token}}
