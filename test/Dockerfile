@@ -1,7 +1,4 @@
-# set default input arguments
-ARG IMAGE_TAG
-
-FROM ${IMAGE_TAG}
+FROM base-image:ci
 
 # add local files
 COPY root/ /
