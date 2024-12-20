@@ -14,54 +14,57 @@ jobs:
     name: Update License
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    env:
-      REGEX: ^(Copyright \(c\) )[0-9]{4}( Devon Powell)$
+    strategy:
+      matrix:
+        branch:
+          - main
+          - release/jammy
+          - release/focal
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
-      - name: Determine info
-        shell: bash
-        id: info
-        run: |
-          OLD_YEAR=$(grep -oEi "$REGEX" LICENSE | grep -oEi '[0-9]{4}')
-          NEW_YEAR=$(date +%Y)
-          UPDATE_TITLE="Bump LICENSE year from $OLD_YEAR to $NEW_YEAR"
-          UPDATE_BODY="$UPDATE_TITLE."
-          echo "license-year=$NEW_YEAR" >> $GITHUB_OUTPUT
-          echo "update-title=$UPDATE_TITLE" >> $GITHUB_OUTPUT
-          echo "update-body=$UPDATE_BODY" >> $GITHUB_OUTPUT
-      - name: Update LICENSE
-        run: sed -i -E "s/$REGEX/\1$LICENSE_YEAR\2/" LICENSE
-        env:
-          LICENSE_YEAR: ${{steps.info.outputs.license-year}}
+        with:
+          ref: ${{matrix.branch}}
       - name: Generate app token
         id: app-token
         uses: actions/create-github-app-token@v1.11.0
         with:
           app-id: ${{secrets.GH_APP_ID}}
           private-key: ${{secrets.GH_APP_PRIVATE_KEY}}
-      - name: Generate user info
-        id: user-info
+      - name: Determine info
+        shell: bash
+        id: info
         run: |
+          REGEX='^(Copyright \(c\) )[0-9]{4}( Devon Powell)$'
+          OLD_YEAR=$(grep -oEi "$REGEX" LICENSE | grep -oEi '[0-9]{4}')
+          NEW_YEAR=$(date +%Y)
+          UPDATE_TITLE="Bump \`LICENSE\` year from $OLD_YEAR to $NEW_YEAR"
           USER_NAME="$GH_APP_SLUG[bot]"
           USER_ID=$(gh api "/users/$USER_NAME" --jq .id)
           USER_EMAIL="$USER_ID+$USER_NAME@users.noreply.github.com"
-          echo "id=$USER_ID" >> $GITHUB_OUTPUT
-          echo "name=$USER_NAME" >> $GITHUB_OUTPUT
-          echo "email=$USER_ID+$USER_NAME@users.noreply.github.com" >> $GITHUB_OUTPUT
+          echo "replace-regex=$REGEX" >> $GITHUB_OUTPUT
+          echo "license-year=$NEW_YEAR" >> $GITHUB_OUTPUT
+          echo "update-title=$UPDATE_TITLE" >> $GITHUB_OUTPUT
+          echo "update-body=$UPDATE_TITLE." >> $GITHUB_OUTPUT
           echo "commit-author=$USER_NAME <$USER_EMAIL>" >> $GITHUB_OUTPUT
         env:
           GH_APP_SLUG: ${{steps.app-token.outputs.app-slug}}
           GH_TOKEN: ${{steps.app-token.outputs.token}}
+      - name: Update LICENSE
+        run: sed -i -E "s/$REPLACE_REGEX/\1$LICENSE_YEAR\2/" LICENSE
+        env:
+          LICENSE_YEAR: ${{steps.info.outputs.license-year}}
+          REPLACE_REGEX: ${{steps.info.outputs.replace-regex}}
       - name: Handle changes
         uses: peter-evans/create-pull-request@v7.0.5
         id: changes
         with:
           token: ${{steps.app-token.outputs.token}}
           commit-message: ${{steps.info.outputs.update-title}}
-          author: ${{steps.user-info.outputs.commit-author}}
-          committer: ${{steps.user-info.outputs.commit-author}}
+          author: ${{steps.info.outputs.commit-author}}
+          committer: ${{steps.info.outputs.commit-author}}
           add-paths: LICENSE
+          base: ${{matrix.branch}}
           branch: auto/update-license
           delete-branch: true
           title: ${{steps.info.outputs.update-title}}
