@@ -1,4 +1,65 @@
 #!/command/with-contenv bash
 
 set -e
-exec /etc/s6-overlay/scripts/test
+
+echo "Platform: $(uname -m)"
+
+result=0
+
+echo "=> Check '/.base-apply-permissions-complete' exists"
+
+if [ -e /.base-apply-permissions-complete ]; then
+  echo "=> Success! File '/.base-apply-permissions-complete' exists"
+else
+  echo "=> Failed! File '/.base-apply-permissions-complete' missing"
+
+  result=1
+fi
+
+echo "=> Check '/.base-set-up-timezone-complete' exists"
+
+if [ -e /.base-set-up-timezone-complete ]; then
+  echo "=> Success! File '/.base-set-up-timezone-complete' exists"
+else
+  echo "=> Failed! File '/.base-set-up-timezone-complete' missing"
+
+  result=1
+fi
+
+echo "=> Check '/.base-set-up-user-complete' exists"
+
+if [ -e /.base-set-up-user-complete ]; then
+  echo "=> Success! File '/.base-set-up-user-complete' exists"
+else
+  echo "=> Failed! File '/.base-set-up-user-complete' missing"
+
+  result=1
+fi
+
+echo "=> Check '/etc/timezone' is correct"
+
+timezone=$(cat /etc/timezone)
+
+if [[ "$timezone" == "$TZ" ]]; then
+  echo "=> Success! File '/etc/timezone' correct"
+else
+  echo "=> Failed! File '/etc/timezone' incorrect ($timezone => $TZ)"
+
+  result=1
+fi
+
+echo "=> Check '/etc/localtime' is correct"
+
+localtime=$(readlink /etc/localtime)
+expected="/usr/share/zoneinfo/$TZ"
+
+if [[ "$localtime" == "$expected" ]]; then
+  echo "=> Success! File '/etc/localtime' correct"
+else
+  echo "=> Failed! File '/etc/localtime' incorrect ($localtime => $expected)"
+
+  result=1
+fi
+
+exit $result
+

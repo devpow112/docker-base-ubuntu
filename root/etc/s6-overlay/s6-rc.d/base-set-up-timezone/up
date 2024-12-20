@@ -1,1 +1,1 @@
-/etc/s6-overlay/scripts/base-set-up-timezone
+/etc/s6-overlay/s6-rc.d/base-set-up-timezone/run
