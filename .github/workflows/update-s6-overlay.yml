@@ -71,7 +71,7 @@ jobs:
           committer: ${{steps.info.outputs.commit-author}}
           add-paths: Dockerfile
           base: ${{matrix.branch}}
-          branch: auto/update-s6-overlay
+          branch: auto/${{matrix.branch}}/update-s6-overlay
           delete-branch: true
           title: ${{steps.info.outputs.update-title}}
           body: ${{steps.info.outputs.update-body}}
