@@ -56,7 +56,7 @@ jobs:
           echo "base-image-tag=$TEMP_IMAGE:base-image" >> $GITHUB_OUTPUT
           echo "test-image-tag=$TEMP_IMAGE:test" >> $GITHUB_OUTPUT
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.2.0
+        uses: docker/setup-qemu-action@v3.3.0
         with:
           platforms: ${{steps.info.outputs.platforms}}
       - name: Set up Docker Buildx
@@ -65,7 +65,7 @@ jobs:
         with:
           driver-opts: network=host
       - name: Build image
-        uses: docker/build-push-action@v6.10.0
+        uses: docker/build-push-action@v6.11.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
@@ -75,7 +75,7 @@ jobs:
           cache-to: type=gha,mode=max
           push: true
       - name: Build test image
-        uses: docker/build-push-action@v6.10.0
+        uses: docker/build-push-action@v6.11.0
         with:
           context: ./test
           builder: ${{steps.buildx.outputs.name}}
