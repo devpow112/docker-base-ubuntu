@@ -28,7 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.2.0
+        uses: docker/setup-qemu-action@v3.3.0
         with:
           platforms: ${{env.PLATFORMS}}
       - name: Set up Docker Buildx
@@ -101,7 +101,7 @@ jobs:
           password: ${{github.token}}
       - name: Build & push image
         if: steps.info.outputs.create-release
-        uses: docker/build-push-action@v6.10.0
+        uses: docker/build-push-action@v6.11.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
