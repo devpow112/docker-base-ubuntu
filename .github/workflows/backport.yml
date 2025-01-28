@@ -13,7 +13,7 @@ permissions:
 jobs:
   backport:
     name: Backport
-    runs-on: ubuntu-latest
+    runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 5
     if: >
       github.event.pull_request.merged && (
