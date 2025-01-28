@@ -1,4 +1,4 @@
-FROM ubuntu:jammy-20240911.1
+FROM ubuntu:jammy-20240808
 
 # set default input arguments
 ARG TARGETPLATFORM
@@ -21,7 +21,6 @@ ENV HOME=/root \
 RUN export DEBIAN_FRONTEND=noninteractive && \
     echo '###### Set up packages' && \
     apt-get update && \
-    apt-get upgrade -y && \
     apt-get install --no-install-recommends --no-install-suggests -y \
       apt-utils \
       ca-certificates \
