@@ -6,7 +6,7 @@ defaults:
 jobs:
   check-formatting-dockerfile:
     name: Check Formatting (Dockerfile)
-    runs-on: ubuntu-latest
+    runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -15,7 +15,7 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
   check-formatting-markdown:
     name: Check Formatting (Markdown)
-    runs-on: ubuntu-latest
+    runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -26,7 +26,7 @@ jobs:
           globs: '**/*.md'
   build-and-test:
     name: Build & Test
-    runs-on: ubuntu-latest
+    runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 30
     services:
       registry:

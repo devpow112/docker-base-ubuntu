@@ -13,7 +13,7 @@ jobs:
     uses: ./.github/workflows/ci.yml
   cd:
     name: CD
-    runs-on: ubuntu-latest
+    runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 30
     if: (!contains(github.event.head_commit.message, '[skip release]'))
     permissions:
