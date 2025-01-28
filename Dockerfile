@@ -21,6 +21,7 @@ ENV HOME=/root \
 RUN export DEBIAN_FRONTEND=noninteractive && \
     echo '###### Set up packages' && \
     apt-get update && \
+    apt-get upgrade -y && \
     apt-get install --no-install-recommends --no-install-suggests -y \
       apt-utils \
       ca-certificates \
