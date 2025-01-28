@@ -9,7 +9,7 @@ concurrency: update-s6-overlay
 jobs:
   update-s6-overlay:
     name: Update S6 Overlay
-    runs-on: ubuntu-latest
+    runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 5
     strategy:
       matrix:
