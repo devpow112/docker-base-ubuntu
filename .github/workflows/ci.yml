@@ -6,7 +6,7 @@ defaults:
 jobs:
   check-formatting-dockerfile:
     name: Check Formatting (Dockerfile)
-    runs-on: ubuntu-latest
+    runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -15,7 +15,7 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
   check-formatting-markdown:
     name: Check Formatting (Markdown)
-    runs-on: ubuntu-latest
+    runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -26,7 +26,7 @@ jobs:
           globs: '**/*.md'
   build-and-test:
     name: Build & Test
-    runs-on: ubuntu-latest
+    runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 30
     services:
       registry:
@@ -58,6 +58,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.3.0
         with:
+          image: ${{vars.SETUP_QEMU_IMAGE}}
           platforms: ${{steps.info.outputs.platforms}}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.8.0
@@ -65,7 +66,7 @@ jobs:
         with:
           driver-opts: network=host
       - name: Build image
-        uses: docker/build-push-action@v6.11.0
+        uses: docker/build-push-action@v6.13.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
@@ -75,7 +76,7 @@ jobs:
           cache-to: type=gha,mode=max
           push: true
       - name: Build test image
-        uses: docker/build-push-action@v6.11.0
+        uses: docker/build-push-action@v6.13.0
         with:
           context: ./test
           builder: ${{steps.buildx.outputs.name}}

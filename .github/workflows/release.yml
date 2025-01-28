@@ -13,7 +13,7 @@ jobs:
     uses: ./.github/workflows/ci.yml
   cd:
     name: CD
-    runs-on: ubuntu-latest
+    runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 30
     if: (!contains(github.event.head_commit.message, '[skip release]'))
     permissions:
@@ -30,6 +30,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.3.0
         with:
+          image: ${{vars.SETUP_QEMU_IMAGE}}
           platforms: ${{env.PLATFORMS}}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.8.0
@@ -101,7 +102,7 @@ jobs:
           password: ${{github.token}}
       - name: Build & push image
         if: steps.info.outputs.create-release
-        uses: docker/build-push-action@v6.11.0
+        uses: docker/build-push-action@v6.13.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
