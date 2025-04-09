@@ -136,11 +136,12 @@ jobs:
             )
             DETAILS=${DETAILS#*$'\n'}
             docker rmi -f $LOCAL_IMAGE_TAG
-            if docker pull --platform=$PLATFORM $IMAGE_TAG; then
-              SIZE_OLD=$(docker inspect -f '{{.Size}}' $IMAGE_TAG)
+            if docker pull --platform=$PLATFORM $REMOTE_IMAGE_TAG; then
+              SIZE_OLD=$(docker inspect -f '{{.Size}}' $REMOTE_IMAGE_TAG)
             else
               SIZE_OLD=$SIZE_NEW
             fi
+            docker rmi -f $REMOTE_IMAGE_TAG
             SIZE=$(echo $SIZE_NEW | numfmt --to=iec --suffix=B --format='%.2f')
             SIZE_DIFF=$(
               echo "$(( SIZE_NEW - SIZE_OLD ))" |
