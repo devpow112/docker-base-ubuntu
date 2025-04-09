@@ -7,6 +7,9 @@
 - name: 'backport: release/focal'
   description: Pull requests that backport to release/focal
   color: 8f4606
+- name: 'backport: release/jammy'
+  description: Pull requests that backport to release/jammy
+  color: 8f4606  
 - name: bash
   description: Pull requests that update bash code
   color: 4eaa25
