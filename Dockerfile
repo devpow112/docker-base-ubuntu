@@ -4,7 +4,7 @@ FROM ubuntu:focal-20250404
 ARG TARGETPLATFORM
 ARG LANGUAGE=en_US
 ARG ENCODING=UTF-8
-ARG S6_OVERLAY_VERSION=3.2.0.2
+ARG S6_OVERLAY_VERSION=3.2.0.3
 
 # set default shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
