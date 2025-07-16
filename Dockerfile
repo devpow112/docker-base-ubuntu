@@ -1,4 +1,4 @@
-FROM ubuntu:jammy-20250619
+FROM ubuntu:jammy-20250714
 
 # set default input arguments
 ARG TARGETPLATFORM
