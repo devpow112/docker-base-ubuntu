@@ -108,8 +108,9 @@ jobs:
           builder: ${{steps.buildx.outputs.name}}
           platforms: ${{env.PLATFORMS}}
           build-args: |
-            BUILD_DATETIME=${{steps.info.outputs.datetime}}
+            BUILD_CREATED=${{steps.info.outputs.datetime}}
             BUILD_VERSION=${{steps.info.outputs.release-version}}
+            BUILD_REF_NAME=${{steps.info.outputs.release-branch}}
             BUILD_REVISION=${{steps.info.outputs.release-commit}}
           tags: ${{steps.info.outputs.docker-tags}}
           cache-from: type=gha
