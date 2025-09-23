@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5.0.0
       - name: Check formatting
-        uses: hadolint/hadolint-action@v3.2.0
+        uses: hadolint/hadolint-action@v3.3.0
   check-formatting-markdown:
     name: Check Formatting (Markdown)
     runs-on: ${{vars.RUNS_ON}}
