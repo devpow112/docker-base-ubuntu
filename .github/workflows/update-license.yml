@@ -67,7 +67,7 @@ jobs:
           title: ${{steps.info.outputs.update-title}}
           body: ${{steps.info.outputs.update-body}}
           labels: auto
-      - name: Enable auto-merge
+      - name: Enable auto merge
         if: steps.changes.outputs.pull-request-operation == 'created'
         run: gh pr merge --auto --squash "$PULL_REQUEST_URL"
         env:
