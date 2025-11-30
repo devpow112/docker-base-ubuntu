@@ -7,7 +7,7 @@ docker:
   - changed-files:
     - any-glob-to-any-file:
       - '**/Dockerfile'
-      - .dockerignore
+      - '**/.dockerignore'
 documentation:
   - changed-files:
     - any-glob-to-any-file:
