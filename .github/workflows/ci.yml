@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v5.0.1
+        uses: actions/checkout@v6.0.1
       - name: Check formatting
         uses: hadolint/hadolint-action@v3.3.0
   check-formatting-markdown:
@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v5.0.1
+        uses: actions/checkout@v6.0.1
       - name: Check formatting
         uses: davidanson/markdownlint-cli2-action@v21.0.0
         with:
@@ -35,7 +35,7 @@ jobs:
           - 5000:5000
     steps:
       - name: Checkout
-        uses: actions/checkout@v5.0.1
+        uses: actions/checkout@v6.0.1
       - name: Determine info
         id: info
         run: |
