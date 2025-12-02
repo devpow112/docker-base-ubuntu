@@ -19,7 +19,7 @@ jobs:
           - release/focal
     steps:
       - name: Checkout
-        uses: actions/checkout@v5.0.1
+        uses: actions/checkout@v6.0.1
         with:
           ref: ${{matrix.branch}}
       - name: Generate app token
