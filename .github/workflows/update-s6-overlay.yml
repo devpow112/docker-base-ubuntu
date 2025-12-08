@@ -68,7 +68,7 @@ jobs:
           S6_OVERLAY_VERSION: ${{steps.info.outputs.s6-overlay-version}}
           REPLACE_REGEX: ${{steps.info.outputs.replace-regex}}
       - name: Handle changes
-        uses: peter-evans/create-pull-request@v7.0.9
+        uses: peter-evans/create-pull-request@v7.0.11
         id: changes
         with:
           token: ${{steps.app-token.outputs.token}}
