@@ -54,7 +54,7 @@ jobs:
           LICENSE_YEAR: ${{steps.info.outputs.license-year}}
           REPLACE_REGEX: ${{steps.info.outputs.replace-regex}}
       - name: Handle changes
-        uses: peter-evans/create-pull-request@v7.0.9
+        uses: peter-evans/create-pull-request@v8.0.0
         id: changes
         with:
           token: ${{steps.app-token.outputs.token}}
