@@ -19,7 +19,7 @@ jobs:
           - release/focal
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{matrix.branch}}
       - name: Generate app token
@@ -55,7 +55,7 @@ jobs:
           LICENSE_YEAR: ${{steps.info.outputs.license-year}}
           REPLACE_REGEX: ${{steps.info.outputs.replace-regex}}
       - name: Handle changes
-        uses: peter-evans/create-pull-request@v8.0.0
+        uses: peter-evans/create-pull-request@v8.1.0
         id: changes
         with:
           token: ${{steps.app-token.outputs.token}}

@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
       - name: Check formatting
         uses: hadolint/hadolint-action@v3.3.0
   check-formatting-markdown:
@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
       - name: Check formatting
         uses: davidanson/markdownlint-cli2-action@v22.0.0
         with:
@@ -35,7 +35,7 @@ jobs:
           - 5000:5000
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
       - name: Determine info
         id: info
         run: |
@@ -103,7 +103,7 @@ jobs:
           TEST_IMAGE_TAG: ${{steps.info.outputs.test-image-tag}}
           PLATFORMS: ${{steps.info.outputs.platforms}}
       - name: Hide outdated build details comments
-        uses: int128/hide-comment-action@v1.49.0
+        uses: int128/hide-comment-action@v1.50.0
         if: github.event_name == 'pull_request'
         with:
           starts-with: <!-- build details -->
