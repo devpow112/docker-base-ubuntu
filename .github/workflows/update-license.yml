@@ -64,7 +64,7 @@ jobs:
           committer: ${{steps.info.outputs.commit-author}}
           add-paths: LICENSE
           base: ${{matrix.branch}}
-          branch: auto/${{matrix.branch}}/update-license
+          branch: auto/update-license/${{matrix.branch}}
           delete-branch: true
           title: ${{steps.info.outputs.update-title}}
           body: ${{steps.info.outputs.update-body}}
