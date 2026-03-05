@@ -17,18 +17,24 @@ ENV HOME=/root \
     S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0 \
     S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
+# add pinned package lists
+COPY packages/ /tmp/packages/
+
 # set up packages, locale and non-root user
 RUN export DEBIAN_FRONTEND=noninteractive && \
     echo '###### Set up packages' && \
+    PACKAGE_UPDATES=$(cat /tmp/packages/updates.txt) && \
+    PACKAGE_INSTALLS=$(cat /tmp/packages/installs.txt) && \
+    PACKAGE_TEMPORARY=$(cat /tmp/packages/temporary.txt) && \
     apt-get update && \
-    apt-get upgrade -y && \
+    if [ -n "$PACKAGE_UPDATES" ]; then \
+      apt-get install --no-install-recommends --no-install-suggests -y \
+        $PACKAGE_UPDATES; \
+    fi && \
     apt-get install --no-install-recommends --no-install-suggests -y \
-      apt-utils \
-      ca-certificates \
-      curl \
-      locales \
-      tzdata \
-      xz-utils && \
+      $PACKAGE_INSTALLS && \
+    apt-get install --no-install-recommends --no-install-suggests -y \
+      $PACKAGE_TEMPORARY && \
     echo '###### Set up locale' && \
     echo "###### Language: ${LANGUAGE}" && \
     echo "###### Encoding: ${ENCODING}" && \
@@ -66,11 +72,13 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz && \
     tar -C / -Jxpf /tmp/syslogd-overlay-noarch.tar.xz && \
     echo '###### Clean up' && \
-    apt-get autoremove --purge -y ca-certificates curl xz-utils && \
+    apt-get autoremove --purge -y \
+      $(echo "$PACKAGE_TEMPORARY" | sed 's/=.*//') && \
     apt-get autoremove --purge -y && \
     apt-get autoclean && \
     apt-get clean && \
     rm -rf \
+      /tmp/packages \
       /var/lib/apt/lists/* \
       /var/tmp/* \
       /var/log/* \

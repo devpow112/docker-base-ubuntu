@@ -1,27 +1,31 @@
-name: Pull Request
+name: Update Packages
 on:
-  pull_request:
-    branches:
-      - main
-      - release/*
+  schedule:
+    - cron: 0 15 * * 1-5
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency: update-packages
 jobs:
-  ci:
-    name: CI
-    uses: ./.github/workflows/ci.yml
-    permissions:
-      pull-requests: write
-  check-packages:
-    name: Check Packages
+  update-packages:
+    name: Update Packages
     runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 10
-    permissions:
-      contents: write
-      pull-requests: write
+    strategy:
+      matrix:
+        branch:
+          - main
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
         with:
-          ref: ${{github.head_ref}}
+          ref: ${{matrix.branch}}
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v2.2.1
+        with:
+          app-id: ${{secrets.GH_APP_ID}}
+          private-key: ${{secrets.GH_APP_PRIVATE_KEY}}
       - name: Update packages
         id: updates
         run: bash .github/scripts/update-packages.sh
@@ -29,16 +33,18 @@ jobs:
         if: steps.updates.outputs.update-title
         id: author
         run: |
-          USER_NAME="github-actions[bot]"
+          USER_NAME="${GITHUB_APP_SLUG}[bot]"
           USER_ID=$(gh api "/users/${USER_NAME}" --jq '.id')
           USER_EMAIL="${USER_ID}+${USER_NAME}@users.noreply.github.com"
           echo "commit-author=${USER_NAME} <${USER_EMAIL}>" >> "${GITHUB_OUTPUT}"
         env:
-          GITHUB_TOKEN: ${{github.token}}
-      - name: Push changes
+          GITHUB_TOKEN: ${{steps.app-token.outputs.token}}
+          GITHUB_APP_SLUG: ${{steps.app-token.outputs.app-slug}}
+      - name: Create pull request
         uses: peter-evans/create-pull-request@v8.1.0
+        id: changes
         with:
-          token: ${{github.token}}
+          token: ${{steps.app-token.outputs.token}}
           commit-message: ${{steps.updates.outputs.update-title}}
           author: ${{steps.author.outputs.commit-author}}
           committer: ${{steps.author.outputs.commit-author}}
@@ -46,18 +52,17 @@ jobs:
             packages/installs.txt
             packages/temporary.txt
             packages/updates.txt
-          base: ${{github.event.pull_request.head.ref}}
-          branch: auto/update-packages/pr-${{github.event.pull_request.number}}
+          base: ${{matrix.branch}}
+          branch: auto/update-packages/${{matrix.branch}}
           delete-branch: true
           title: ${{steps.updates.outputs.update-title}}
           body: ${{steps.updates.outputs.update-body}}
           labels: |
             dependencies
             auto
-  label:
-    name: Label
-    runs-on: ${{vars.RUNS_ON}}
-    timeout-minutes: 5
-    steps:
-      - name: Apply labels
-        uses: actions/labeler@v6.0.1
+      - name: Enable auto merge
+        if: steps.changes.outputs.pull-request-operation == 'created'
+        run: gh pr merge --auto --squash "${PULL_REQUEST_URL}"
+        env:
+          GITHUB_TOKEN: ${{steps.app-token.outputs.token}}
+          PULL_REQUEST_URL: ${{steps.changes.outputs.pull-request-url}}

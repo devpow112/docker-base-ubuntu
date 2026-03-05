@@ -1,0 +1,5 @@
+apt-utils=2.8.3
+libc-bin=2.39-0ubuntu8.7
+libc6=2.39-0ubuntu8.7
+locales=2.39-0ubuntu8.7
+tzdata=2025b-0ubuntu0.24.04.1
