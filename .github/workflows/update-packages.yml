@@ -1,0 +1,64 @@
+name: Update Packages
+on:
+  schedule:
+    - cron: 0 15 * * 1-5
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency: update-packages
+jobs:
+  update-packages:
+    name: Update Packages
+    runs-on: ${{vars.RUNS_ON}}
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        branch:
+          - main
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{matrix.branch}}
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v2.2.1
+        with:
+          app-id: ${{secrets.GH_APP_ID}}
+          private-key: ${{secrets.GH_APP_PRIVATE_KEY}}
+      - name: Update packages
+        id: updates
+        run: bash .github/scripts/update-packages.sh
+      - name: Determine commit author
+        id: author
+        run: |
+          USER_NAME="${GITHUB_APP_SLUG}[bot]"
+          USER_ID=$(gh api "/users/${USER_NAME}" --jq '.id')
+          USER_EMAIL="${USER_ID}+${USER_NAME}@users.noreply.github.com"
+          echo "commit-author=${USER_NAME} <${USER_EMAIL}>" >> "${GITHUB_OUTPUT}"
+        env:
+          GITHUB_TOKEN: ${{steps.app-token.outputs.token}}
+          GITHUB_APP_SLUG: ${{steps.app-token.outputs.app-slug}}
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v8.1.0
+        id: changes
+        with:
+          token: ${{steps.app-token.outputs.token}}
+          commit-message: ${{steps.updates.outputs.update-title}}
+          author: ${{steps.author.outputs.commit-author}}
+          committer: ${{steps.author.outputs.commit-author}}
+          add-paths: Dockerfile
+          base: ${{matrix.branch}}
+          branch: auto/update-packages/${{matrix.branch}}
+          delete-branch: true
+          title: ${{steps.updates.outputs.update-title}}
+          body: ${{steps.updates.outputs.update-body}}
+          labels: |
+            dependencies
+            auto
+      - name: Enable auto merge
+        if: steps.changes.outputs.pull-request-operation == 'created'
+        run: gh pr merge --auto --squash "${PULL_REQUEST_URL}"
+        env:
+          GITHUB_TOKEN: ${{steps.app-token.outputs.token}}
+          PULL_REQUEST_URL: ${{steps.changes.outputs.pull-request-url}}
