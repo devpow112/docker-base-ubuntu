@@ -26,35 +26,7 @@ RUN export 'DEBIAN_FRONTEND=noninteractive' && \
     apt-get update && \
     apt-get install --no-install-recommends --no-install-suggests -y \
 # packages:start
-      'apt-utils=2.8.3' \
-      'base-files=13ubuntu10.4' \
-      'ca-certificates=20240203' \
-      'curl=8.5.0-2ubuntu10.7' \
-      'gcc-14-base=14.2.0-4ubuntu2~24.04.1' \
-      'libbrotli1=1.1.0-2build2' \
-      'libc-bin=2.39-0ubuntu8.7' \
-      'libc6=2.39-0ubuntu8.7' \
-      'libcurl4t64=8.5.0-2ubuntu10.7' \
-      'libgcc-s1=14.2.0-4ubuntu2~24.04.1' \
-      'libgnutls30t64=3.8.3-1.1ubuntu3.5' \
-      'libgssapi-krb5-2=1.20.1-6ubuntu2.6' \
-      'libk5crypto3=1.20.1-6ubuntu2.6' \
-      'libkeyutils1=1.6.3-3build1' \
-      'libkrb5-3=1.20.1-6ubuntu2.6' \
-      'libkrb5support0=1.20.1-6ubuntu2.6' \
-      'libldap2=2.6.10+dfsg-0ubuntu0.24.04.1' \
-      'libnghttp2-14=1.59.0-1ubuntu0.2' \
-      'libpsl5t64=0.21.2-1.1build1' \
-      'librtmp1=2.4+20151223.gitfa8646d.1-2build7' \
-      'libsasl2-2=2.1.28+dfsg1-5ubuntu3.1' \
-      'libsasl2-modules-db=2.1.28+dfsg1-5ubuntu3.1' \
-      'libssh-4=0.10.6-2ubuntu0.3' \
-      'libssl3t64=3.0.13-0ubuntu3.7' \
-      'libstdc++6=14.2.0-4ubuntu2~24.04.1' \
-      'locales=2.39-0ubuntu8.7' \
-      'openssl=3.0.13-0ubuntu3.7' \
-      'tzdata=2025b-0ubuntu0.24.04.1' \
-      'xz-utils=5.6.1+really5.4.5-1ubuntu0.2' && \
+      'apt-utils=2.8.3' \n      'base-files=13ubuntu10.4' \n      'ca-certificates=20240203' \n      'curl=8.5.0-2ubuntu10.7' \n      'gcc-14-base=14.2.0-4ubuntu2~24.04.1' \n      'libbrotli1=1.1.0-2build2' \n      'libc-bin=2.39-0ubuntu8.7' \n      'libc6=2.39-0ubuntu8.7' \n      'libcurl4t64=8.5.0-2ubuntu10.7' \n      'libgcc-s1=14.2.0-4ubuntu2~24.04.1' \n      'libgnutls30t64=3.8.3-1.1ubuntu3.5' \n      'libgssapi-krb5-2=1.20.1-6ubuntu2.6' \n      'libk5crypto3=1.20.1-6ubuntu2.6' \n      'libkeyutils1=1.6.3-3build1' \n      'libkrb5-3=1.20.1-6ubuntu2.6' \n      'libkrb5support0=1.20.1-6ubuntu2.6' \n      'libldap2=2.6.10+dfsg-0ubuntu0.24.04.1' \n      'libnghttp2-14=1.59.0-1ubuntu0.2' \n      'libpsl5t64=0.21.2-1.1build1' \n      'librtmp1=2.4+20151223.gitfa8646d.1-2build7' \n      'libsasl2-2=2.1.28+dfsg1-5ubuntu3.1' \n      'libsasl2-modules-db=2.1.28+dfsg1-5ubuntu3.1' \n      'libssh-4=0.10.6-2ubuntu0.3' \n      'libssl3t64=3.0.13-0ubuntu3.7' \n      'libstdc++6=14.2.0-4ubuntu2~24.04.1' \n      'locales=2.39-0ubuntu8.7' \n      'openssl=3.0.13-0ubuntu3.7' \n      'tzdata=2025b-0ubuntu0.24.04.1' \n      'xz-utils=5.6.1+really5.4.5-1ubuntu0.2' && \n
 # packages:end
     echo '###### Set up locale' && \
     echo "###### Language: ${LANGUAGE}" && \
