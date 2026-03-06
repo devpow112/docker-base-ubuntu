@@ -63,13 +63,11 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz && \
     tar -C / -Jxpf /tmp/syslogd-overlay-noarch.tar.xz && \
     echo '###### Clean up' && \
-    xargs -a /tmp/packages/temporary.txt \
-      apt-get autoremove --purge -y && \
+    xargs -a /tmp/packages/temporary.txt apt-get autoremove --purge -y && \
     apt-get autoremove --purge -y && \
     apt-get autoclean && \
     apt-get clean && \
     rm -rf \
-      /tmp/packages \
       /var/lib/apt/lists/* \
       /var/tmp/* \
       /var/log/* \
