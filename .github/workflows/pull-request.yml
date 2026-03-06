@@ -58,6 +58,8 @@ jobs:
     name: Label
     runs-on: ${{vars.RUNS_ON}}
     timeout-minutes: 5
+    permissions:
+      pull-requests: write
     steps:
       - name: Apply labels
         uses: actions/labeler@v6.0.1
