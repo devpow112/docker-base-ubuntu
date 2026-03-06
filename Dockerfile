@@ -1,4 +1,4 @@
-FROM ubuntu:noble-20260113
+FROM ubuntu:noble-20260113 AS build
 
 # set default input arguments
 ARG TARGETPLATFORM \
@@ -69,7 +69,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get autoclean && \
     apt-get clean && \
     rm -rf \
-      /tmp/packages \
       /var/lib/apt/lists/* \
       /var/tmp/* \
       /var/log/* \
@@ -77,6 +76,10 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 
 # add local files
 COPY root/ /
+
+FROM scratch
+
+COPY --from=build / /
 
 # entry (s6 overlays)
 ENTRYPOINT ["/init"]
