@@ -17,18 +17,15 @@ ENV HOME=/root \
     S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0 \
     S6_BEHAVIOUR_IF_STAGE2_FAILS=2
 
+# add package lists
+COPY packages/ /tmp/packages/
+
 # set up packages, locale and non-root user
 RUN export DEBIAN_FRONTEND=noninteractive && \
     echo '###### Set up packages' && \
     apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install --no-install-recommends --no-install-suggests -y \
-      apt-utils \
-      ca-certificates \
-      curl \
-      locales \
-      tzdata \
-      xz-utils && \
+    xargs -a /tmp/packages/generated/install.txt \
+      apt-get install --no-install-recommends --no-install-suggests -y && \
     echo '###### Set up locale' && \
     echo "###### Language: ${LANGUAGE}" && \
     echo "###### Encoding: ${ENCODING}" && \
@@ -48,7 +45,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     PLATFORM_TRANSFORM="${PLATFORM_TRANSFORM};s/^ppc64le/powerpc64le/" && \
     ARCH=$(echo "${TARGETPLATFORM}" | sed "${PLATFORM_TRANSFORM}") && \
     echo "###### Platform mapping s6 overlay: ${TARGETPLATFORM} => ${ARCH}" && \
-    URL=https://github.com/just-containers/s6-overlay/releases/download && \
+    URL='https://github.com/just-containers/s6-overlay/releases/download' && \
     URL="${URL}/v${S6_OVERLAY_VERSION}" && \
     curl -sSfo /tmp/s6-overlay-noarch.tar.xz \
       -L "${URL}/s6-overlay-noarch.tar.xz" && \
@@ -66,11 +63,13 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     tar -C / -Jxpf /tmp/s6-overlay-symlinks-arch.tar.xz && \
     tar -C / -Jxpf /tmp/syslogd-overlay-noarch.tar.xz && \
     echo '###### Clean up' && \
-    apt-get autoremove --purge -y ca-certificates curl xz-utils && \
+    xargs -a /tmp/packages/temporary.txt \
+      apt-get autoremove --purge -y && \
     apt-get autoremove --purge -y && \
     apt-get autoclean && \
     apt-get clean && \
     rm -rf \
+      /tmp/packages \
       /var/lib/apt/lists/* \
       /var/tmp/* \
       /var/log/* \

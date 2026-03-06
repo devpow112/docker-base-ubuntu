@@ -4,13 +4,56 @@ on:
     branches:
       - main
       - release/*
-permissions:
-  contents: read
-  pull-requests: write
 jobs:
   ci:
     name: CI
+    needs: check-packages
     uses: ./.github/workflows/ci.yml
+    permissions:
+      pull-requests: write
+  check-packages:
+    name: Check Packages
+    runs-on: ${{vars.RUNS_ON}}
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{github.head_ref}}
+      - name: Update packages
+        id: updates
+        run: bash .github/scripts/update-packages.sh
+      - name: Gather info
+        id: info
+        run: |
+          USER_NAME="github-actions[bot]"
+          USER_ID=$(gh api "/users/${USER_NAME}" --jq '.id')
+          USER_EMAIL="${USER_ID}+${USER_NAME}@users.noreply.github.com"
+          echo "commit-author=${USER_NAME} <${USER_EMAIL}>" >> "${GITHUB_OUTPUT}"
+          echo "title=Update packages for PR #${PR_NUMBER}" >> "${GITHUB_OUTPUT}"
+        env:
+          GITHUB_TOKEN: ${{github.token}}
+          PR_NUMBER: ${{github.event.pull_request.number}}
+      - name: Push changes
+        uses: peter-evans/create-pull-request@v8.1.0
+        with:
+          token: ${{github.token}}
+          commit-message: ${{steps.info.outputs.title}}
+          author: ${{steps.info.outputs.commit-author}}
+          committer: ${{steps.info.outputs.commit-author}}
+          add-paths: packages/generated/install.txt
+          base: ${{github.event.pull_request.head.ref}}
+          branch: auto/update-packages/pr-${{github.event.pull_request.number}}
+          delete-branch: true
+          draft: true
+          title: ${{steps.info.outputs.title}}
+          body: ${{steps.updates.outputs.update-body}}
+          labels: |
+            dependencies
+            auto
   label:
     name: Label
     runs-on: ${{vars.RUNS_ON}}
