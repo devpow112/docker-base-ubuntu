@@ -1,4 +1,4 @@
-FROM base-image:ci
+FROM ci:image
 
 # add local files
 COPY root/ /
