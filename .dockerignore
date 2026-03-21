@@ -2,6 +2,7 @@
 .github/
 .vscode/
 test/
+packages/required.txt
 .dockerignore
 .editorconfig
 .gitattributes
@@ -11,5 +12,4 @@ test/
 .markdownlintignore
 Dockerfile
 LICENSE
-packages/required.txt
 README.md
