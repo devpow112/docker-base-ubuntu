@@ -13,7 +13,7 @@ jobs:
     uses: ./.github/workflows/ci.yml
   label:
     name: Label
-    runs-on: ${{vars.RUNS_ON}}
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Apply labels
