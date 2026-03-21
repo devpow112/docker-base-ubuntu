@@ -13,7 +13,7 @@ jobs:
       pull-requests: write
   check-packages:
     name: Check Packages
-    runs-on: ${{vars.RUNS_ON}}
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
@@ -56,7 +56,7 @@ jobs:
             auto
   label:
     name: Label
-    runs-on: ${{vars.RUNS_ON}}
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       pull-requests: write

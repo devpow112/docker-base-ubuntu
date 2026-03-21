@@ -9,7 +9,7 @@ concurrency: update-packages
 jobs:
   update-packages:
     name: Update Packages
-    runs-on: ${{vars.RUNS_ON}}
+    runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
       matrix:
