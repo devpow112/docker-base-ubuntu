@@ -1,0 +1,27 @@
+#!/command/with-contenv bash
+
+set -e
+
+if [ -e /.base-set-up-timezone-complete ]; then
+  exit 0
+fi
+
+if [[ $TZ ]]; then
+  find_result=$(find /usr/share/zoneinfo/ -path /usr/share/zoneinfo/$TZ)
+
+  if [[ $find_result == "/usr/share/zoneinfo/$TZ" ]]; then
+    compare_result=$(cmp -s /etc/localtime /usr/share/zoneinfo/$TZ; echo $?)
+
+    if (( $compare_result != 0 )); then
+      echo "Modifying timezone ($TZ) ..."
+      ln -fs /usr/share/zoneinfo/$TZ /etc/localtime
+      dpkg-reconfigure --frontend noninteractive tzdata 2> /dev/null
+      echo "Modifying timezone ($TZ) ... Done"
+    fi
+  else
+    echo "Invalid time zone given: $TZ"
+    exit 1
+  fi
+fi
+
+touch /.base-set-up-timezone-complete

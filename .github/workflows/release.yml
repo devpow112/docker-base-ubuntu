@@ -3,32 +3,48 @@ on:
   push:
     branches:
       - main
-      - release/*
     paths:
       - .github/workflows/release.yml
-      - packages/**
-      - root/**
-      - .dockerignore
-      - Dockerfile
+      - releases/**
 permissions:
   contents: write
   packages: write
-concurrency: release-${{github.ref}}
 jobs:
   cd:
     name: CD
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        release:
+          - noble
+          - jammy
+          - focal
+        include:
+          - release: noble
+            is-latest: true
+          - release: jammy
+            is-latest: false
+          - release: focal
+            is-latest: false
+    concurrency: release-${{matrix.release}}
     env:
-      PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64,linux/s390x,linux/riscv64,linux/ppc64le
       PACKAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
+      - name: Determine platforms
+        id: platforms
+        run: |
+          PLATFORMS=$(paste -sd, "releases/${RELEASE}/platforms.txt")
+          echo "platforms=$PLATFORMS" >> $GITHUB_OUTPUT
+        env:
+          RELEASE: ${{matrix.release}}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4.0.0
         with:
-          platforms: ${{env.PLATFORMS}}
+          platforms: ${{steps.platforms.outputs.platforms}}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.0.0
         id: buildx
@@ -36,13 +52,13 @@ jobs:
         id: info
         shell: bash
         run: |
-          VERSION=$(grep -E '^FROM ubuntu:[a-z]+-[0-9]+$' Dockerfile)
+          VERSION=$(grep -E '^FROM ubuntu:[a-z]+-[0-9]+$' releases/${RELEASE}/Dockerfile)
           VERSION=${VERSION##*:}
           STREAM=${VERSION%-*}
           if [[ -z "$STREAM" ]]; then
             STREAM=$VERSION
           fi
-          URL=https://api.github.com/repos/${{github.repository}}
+          URL=https://api.github.com/repos/${GITHUB_REPOSITORY}
           AUTHORIZATION_HEADER="Authorization: token $GITHUB_TOKEN"
           FILTER=".[].tag_name|select(startswith(\"$VERSION\"))"
           FILTER="$FILTER|sub(\"^$VERSION$DELIMITER\";\"\")|tonumber"
@@ -70,10 +86,11 @@ jobs:
           RELEASE_BRANCH=${GITHUB_REF#refs/heads/}
           DOCKER_TAGS="$PACKAGE:$RELEASE_VERSION"
           DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$STREAM"
-          RELEASE_LATEST='false'
-          if [[ "$RELEASE_BRANCH" == 'main' ]]; then
+          if [[ "$IS_LATEST" == 'true' ]]; then
             DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:latest"
             RELEASE_LATEST='true'
+          else
+            RELEASE_LATEST='false'
           fi
           RELEASE_COMMIT="$GITHUB_SHA"
           DATETIME=$(date --utc +%FT%T.%3NZ)
@@ -92,8 +109,10 @@ jobs:
           echo "docker-tags=$DOCKER_TAGS" >> $GITHUB_OUTPUT
           echo "release-latest=$RELEASE_LATEST" >> $GITHUB_OUTPUT
         env:
+          RELEASE: ${{matrix.release}}
           GITHUB_TOKEN: ${{github.token}}
           DELIMITER: '.'
+          IS_LATEST: ${{matrix.is-latest}}
       - name: Login to registry
         if: steps.info.outputs.create-release
         uses: docker/login-action@v4.0.0
@@ -105,17 +124,17 @@ jobs:
         if: steps.info.outputs.create-release
         uses: docker/build-push-action@v7.0.0
         with:
-          context: .
+          context: ./releases/${{matrix.release}}
           builder: ${{steps.buildx.outputs.name}}
-          platforms: ${{env.PLATFORMS}}
+          platforms: ${{steps.platforms.outputs.platforms}}
           build-args: |
             BUILD_CREATED=${{steps.info.outputs.datetime}}
             BUILD_VERSION=${{steps.info.outputs.release-version}}
             BUILD_REF_NAME=${{steps.info.outputs.release-branch}}
             BUILD_REVISION=${{steps.info.outputs.release-commit}}
           tags: ${{steps.info.outputs.docker-tags}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{matrix.release}}
+          cache-to: type=gha,scope=${{matrix.release}},mode=max
           push: true
       - name: Create release
         if: steps.info.outputs.create-release

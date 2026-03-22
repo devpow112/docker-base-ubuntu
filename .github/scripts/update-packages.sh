@@ -2,12 +2,14 @@
 
 set -euo pipefail
 
-INSTALL_FILE="packages/generated/install.txt"
+RELEASE="${1:?Usage: $0 <release-dir>}"
+
+INSTALL_FILE="${RELEASE}/packages/generated/install.txt"
 DPKG_QUERY="dpkg-query -W -f '\${Package}=\${Version}\n'"
 
-BASE_IMAGE=$(sed -n 's/^FROM \(ubuntu:[a-z]*-[0-9]*\)$/\1/p' Dockerfile)
-REQUIRED=$(sed '/^$/d' packages/required.txt | tr '\n' ' ')
-TEMPORARY=$(sed '/^$/d' packages/temporary.txt | tr '\n' ' ')
+BASE_IMAGE=$(sed -n 's/^FROM \(ubuntu:[a-z]*-[0-9]*\)$/\1/p' "${RELEASE}/Dockerfile")
+REQUIRED=$(sed '/^$/d' "${RELEASE}/packages/required.txt" | tr '\n' ' ')
+TEMPORARY=$(sed '/^$/d' "${RELEASE}/packages/temporary.txt" | tr '\n' ' ')
 
 # get base image package list
 BASE_LIST=$(

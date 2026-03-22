@@ -3,7 +3,28 @@
 [![License][License]](LICENSE)
 [![Release][Release Badge]][Release Workflow]
 
-[Ubuntu] container for use as base for other containers.
+[Ubuntu] container for use as base for other containers. Supports multiple
+Ubuntu releases (`noble`, `jammy`, `focal`) from a single repository.
+
+## Structure
+
+Each Ubuntu release has its own directory with a self-contained Docker build
+context:
+
+```text
+releases/
+  noble/        # Ubuntu 24.04 LTS (Noble Numbat)
+  jammy/        # Ubuntu 22.04 LTS (Jammy Jellyfish)
+  focal/        # Ubuntu 20.04 LTS (Focal Fossa)
+```
+
+Each release directory contains:
+
+- `Dockerfile` - Release-specific Docker build file
+- `packages/` - Package lists (`required.txt`, `temporary.txt`,
+  `generated/install.txt`)
+- `root/` - [s6 overlay] service definitions
+- `test/` - Test Dockerfile and service
 
 ## Building
 
@@ -13,8 +34,11 @@ docker build \
   --build-arg "LANGUAGE=..." \
   --build-arg "ENCODING=..." \
   --build-arg "S6_OVERLAY_VERSION=..." \
-  -t base-ubuntu .
+  -t base-ubuntu releases/noble/
 ```
+
+Replace `releases/noble/` with `releases/jammy/` or `releases/focal/` to build a
+different release.
 
 ### Arguments
 
@@ -42,10 +66,12 @@ standard [Ubuntu][Ubuntu Container] container.
 This is the intended usage.
 
 ```dockerfile
-FROM ghcr.io/devpow112/base-ubuntu:latest
+FROM ghcr.io/devpow112/base-ubuntu:noble
 
 ...
 ```
+
+Available tags: `noble`, `jammy`, `focal`, `latest` (points to `noble`).
 
 ### Interactive
 
@@ -55,7 +81,7 @@ testing with.
 ```console
 docker run --it --rm \
   --entrypoint /bin/bash \
-  ghcr.io/devpow112/base-ubuntu:latest
+  ghcr.io/devpow112/base-ubuntu:noble
 ```
 
 <!-- links -->

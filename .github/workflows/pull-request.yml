@@ -1,18 +1,30 @@
 name: Pull Request
-on:
-  pull_request:
-    branches:
-      - main
-      - release/*
+on: pull_request
 permissions:
   contents: read
 defaults:
   run:
     shell: bash
 concurrency:
-  group: ${{github.event.pull_request.number}}
+  group: ${{github.workflow_ref}}
   cancel-in-progress: true
 jobs:
+  determine-releases:
+    name: Determine Releases
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      releases: ${{steps.releases.outputs.releases}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+      - name: Determine releases
+        id: releases
+        run: |
+          RELEASES=$(ls -d releases/*/ | xargs -n1 basename)
+          echo "Releases: ${RELEASES//$'\n'/, }"
+          RELEASES=$(echo "$RELEASES" | jq -Rnc '[inputs]')
+          echo "releases=${RELEASES}" >> "${GITHUB_OUTPUT}"
   check-packages:
     name: Check Packages
     runs-on: ubuntu-latest
@@ -20,14 +32,23 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    needs:
+      - determine-releases
+      - check-base-images
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
         with:
           ref: ${{github.head_ref}}
       - name: Update packages
-        id: updates
-        run: bash .github/scripts/update-packages.sh
+        run: |
+          for RELEASE in $(echo "${RELEASES}" | jq -r '.[]'); do
+            echo "::group::${RELEASE}"
+            bash .github/scripts/update-packages.sh "releases/${RELEASE}"
+            echo '::endgroup::'
+          done
+        env:
+          RELEASES: ${{needs.determine-releases.outputs.releases}}
       - name: Gather info
         id: info
         run: |
@@ -46,16 +67,41 @@ jobs:
           commit-message: ${{steps.info.outputs.title}}
           author: ${{steps.info.outputs.commit-author}}
           committer: ${{steps.info.outputs.commit-author}}
-          add-paths: packages/generated/install.txt
+          add-paths: releases/*/packages/generated/install.txt
           base: ${{github.event.pull_request.head.ref}}
           branch: auto/update-packages/pr-${{github.event.pull_request.number}}
           delete-branch: true
           draft: true
           title: ${{steps.info.outputs.title}}
-          body: ${{steps.updates.outputs.update-body}}
+          body: Automated package updates.
           labels: |
             dependencies
             auto
+  check-base-images:
+    name: Check Base Images
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: determine-releases
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+      - name: Verify base images match releases
+        run: |
+          for RELEASE in $(echo "${RELEASES}" | jq -r '.[]'); do
+            echo "::group::${RELEASE}"
+            FROM_LINE=$(grep -E '^FROM ubuntu:' "releases/${RELEASE}/Dockerfile")
+            IMAGE_TAG=${FROM_LINE#FROM ubuntu:}
+            IMAGE_STREAM=${IMAGE_TAG%%-*}
+            if [[ "${IMAGE_STREAM}" != "${RELEASE}" ]]; then
+              echo "::error::Base image '${FROM_LINE}' does not match" \
+                "release '${RELEASE}' (expected 'FROM ubuntu:${RELEASE}-...')"
+              exit 1
+            fi
+            echo "Base image '${FROM_LINE}' matches release '${RELEASE}'"
+            echo '::endgroup::'
+          done
+        env:
+          RELEASES: ${{needs.determine-releases.outputs.releases}}
   check-formatting-all:
     name: Check Formatting (All)
     runs-on: ubuntu-latest
@@ -76,6 +122,8 @@ jobs:
         uses: actions/checkout@v6.0.2
       - name: Check formatting
         uses: hadolint/hadolint-action@v3.3.0
+        with:
+          recursive: true
   check-formatting-markdown:
     name: Check Formatting (Markdown)
     runs-on: ubuntu-latest
@@ -91,33 +139,29 @@ jobs:
     name: Build & Test
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    permissions:
-      contents: read
-      pull-requests: write
     needs:
+      - determine-releases
+      - check-base-images
       - check-packages
+    strategy:
+      fail-fast: false
+      matrix:
+        release: ${{fromJson(needs.determine-releases.outputs.releases)}}
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
       - name: Determine info
         id: info
         run: |
-          PLATFORMS=(
-            linux/amd64
-            linux/arm/v7
-            linux/arm64
-            linux/ppc64le
-            linux/riscv64
-            linux/s390x
-          )
-          SAVE_IFS="$IFS"
-          IFS=","
-          PLATFORMS="${PLATFORMS[*]}"
-          IFS="$SAVE_IFS"
+          RELEASE_DIR="releases/${RELEASE}"
+          PLATFORMS=$(paste -sd, "${RELEASE_DIR}/platforms.txt")
           TEMP_IMAGE='ci'
           echo "platforms=$PLATFORMS" >> $GITHUB_OUTPUT
-          echo "ci-image-tag=$TEMP_IMAGE:image" >> $GITHUB_OUTPUT
-          echo "ci-test-image-tag=$TEMP_IMAGE:test-image" >> $GITHUB_OUTPUT
+          echo "ci-image-tag=$TEMP_IMAGE:${RELEASE}" >> $GITHUB_OUTPUT
+          echo "ci-test-image-tag=$TEMP_IMAGE:${RELEASE}-test" >> $GITHUB_OUTPUT
+          echo "release-dir=${RELEASE_DIR}" >> $GITHUB_OUTPUT
+        env:
+          RELEASE: ${{matrix.release}}
       - name: Set up Docker
         uses: docker/setup-docker-action@v5.0.0
         with:
@@ -130,22 +174,22 @@ jobs:
       - name: Build image
         uses: docker/build-push-action@v7.0.0
         with:
-          context: .
+          context: ./${{steps.info.outputs.release-dir}}
           platforms: ${{steps.info.outputs.platforms}}
           tags: ${{steps.info.outputs.ci-image-tag}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{matrix.release}}
+          cache-to: type=gha,scope=${{matrix.release}},mode=max
           load: true
       - name: Build test image
         uses: docker/build-push-action@v7.0.0
         with:
-          context: ./test
+          context: ./${{steps.info.outputs.release-dir}}/test
           build-contexts: |
             ci:image=docker-image://${{steps.info.outputs.ci-image-tag}}
           platforms: ${{steps.info.outputs.platforms}}
           tags: ${{steps.info.outputs.ci-test-image-tag}}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{matrix.release}}-test
+          cache-to: type=gha,scope=${{matrix.release}}-test,mode=max
           load: true
       - name: Run tests
         run: >
@@ -161,16 +205,11 @@ jobs:
         env:
           TEST_IMAGE_TAG: ${{steps.info.outputs.ci-test-image-tag}}
           PLATFORMS: ${{steps.info.outputs.platforms}}
-      - name: Hide outdated build details comments
-        uses: int128/hide-comment-action@v1.53.0
-        with:
-          starts-with: <!-- build details -->
-      - name: Create build details comment
-        id: image-details
+      - name: Collect build details
         run: |
           # Determine the remote image tag to compare against
           echo "::group::Determine remote image tag"
-          VERSION=$(grep -E '^FROM ubuntu:[a-z]+-[0-9]+$' Dockerfile)
+          VERSION=$(grep -E '^FROM ubuntu:[a-z]+-[0-9]+$' releases/${RELEASE}/Dockerfile)
           VERSION=${VERSION##*:}
           STREAM=${VERSION%-*}
           REMOTE_IMAGE_TAG=$REMOTE_IMAGE:$STREAM
@@ -184,13 +223,15 @@ jobs:
             echo "Remote image: $REMOTE_IMAGE_TAG"
           fi
           echo "::endgroup::"
-          # Build the comment body per platform
-          BODY=$'<!-- build details -->\n\n'
-          HAVE_REMOTE=true
-          FAILED_PLATFORMS=()
-          TOTAL_SIZE_NEW=0
-          TOTAL_SIZE_OLD=0
-          PLATFORM_BODIES=""
+          # Collect build data as JSON
+          JSON=$(jq -n --arg release "$RELEASE" '{
+            release: $release,
+            have_remote: true,
+            failed_platforms: [],
+            total_size_new: 0,
+            total_size_old: 0,
+            platforms: []
+          }')
           FMT='--to=iec --suffix=B --format=%.2f'
           for PLATFORM in ${PLATFORMS//,/ }; do
             echo "::group::$PLATFORM"
@@ -200,13 +241,13 @@ jobs:
               -f '{{.Size}}' $LOCAL_IMAGE_TAG)
             echo "Local size: $SIZE_NEW ($(echo $SIZE_NEW | numfmt $FMT))"
             # Layer breakdown
-            DETAILS=$(
+            LAYERS=$(
               docker image history --platform=$PLATFORM \
                 --format 'table | {{.Size}} | {{.CreatedBy}} |' $LOCAL_IMAGE_TAG
             )
-            DETAILS=${DETAILS#*$'\n'}
+            LAYERS=${LAYERS#*$'\n'}
             echo "Layer breakdown:"
-            echo "$DETAILS"
+            echo "$LAYERS"
             # Remote image size
             if docker pull --platform=$PLATFORM $REMOTE_IMAGE_TAG; then
               SIZE_OLD=$(
@@ -215,81 +256,136 @@ jobs:
               )
               echo "Remote size: $SIZE_OLD ($(echo $SIZE_OLD | numfmt $FMT))"
             else
-              HAVE_REMOTE=false
-              FAILED_PLATFORMS+=("$PLATFORM")
               PULL_FAILED=true
               SIZE_OLD=$SIZE_NEW
               echo "::warning::Failed to pull remote image for $PLATFORM," \
                 "using local as baseline"
             fi
-            # Format size with difference
-            SIZE=$(echo $SIZE_NEW | numfmt $FMT)
-            DIFF=$(( SIZE_NEW - SIZE_OLD ))
-            echo "Difference: $DIFF bytes"
-            if (( DIFF > 0 )); then
-              SIZE+=" \`+$(echo $DIFF | numfmt $FMT)\`"
-            elif (( DIFF < 0 )); then
-              SIZE+=" \`$(echo $DIFF | numfmt $FMT)\`"
-            fi
-            echo "Formatted size: $SIZE"
-            # Accumulate totals
-            TOTAL_SIZE_NEW=$((TOTAL_SIZE_NEW + SIZE_NEW))
-            TOTAL_SIZE_OLD=$((TOTAL_SIZE_OLD + SIZE_OLD))
-            # Determine status indicator
-            if (( DIFF > 0 )); then
-              STATUS=":red_square:"
-            elif (( DIFF < 0 )); then
-              STATUS=":yellow_square:"
-            else
-              STATUS=":green_square:"
-            fi
-            # Append to platform bodies
-            PLATFORM_BODIES+=$'<details>\n'
-            PLATFORM_BODIES+="<summary><code>$PLATFORM</code>"
-            PLATFORM_BODIES+=" $STATUS</summary><br/>"$'\n\n'
-            if [[ "$PULL_FAILED" == "true" ]]; then
-              PLATFORM_BODIES+=$'> [!NOTE]\n'
-              PLATFORM_BODIES+=$'> Remote image unavailable.'
-              PLATFORM_BODIES+=$' Size comparison skipped'
-              PLATFORM_BODIES+=$' for this platform.\n\n'
-            fi
-            PLATFORM_BODIES+="**Size:** $SIZE"$'\n'
-            PLATFORM_BODIES+=$'\n#### Layers\n\n'
-            PLATFORM_BODIES+=$'| Size | Created By |\n'
-            PLATFORM_BODIES+=$'| ---- | ---------- |\n'
-            PLATFORM_BODIES+="$DETAILS"
-            PLATFORM_BODIES+=$'\n\n</details>\n\n'
+            # Add platform data to JSON
+            JSON=$(echo "$JSON" | jq \
+              --arg platform "$PLATFORM" \
+              --argjson size_new "$SIZE_NEW" \
+              --argjson size_old "$SIZE_OLD" \
+              --argjson pull_failed "$PULL_FAILED" \
+              --arg layers "$LAYERS" \
+              '.platforms += [{
+                name: $platform,
+                size_new: $size_new,
+                size_old: $size_old,
+                pull_failed: $pull_failed,
+                layers: $layers
+              }]
+              | .total_size_new += $size_new
+              | .total_size_old += $size_old
+              | if $pull_failed then
+                  .have_remote = false
+                  | .failed_platforms += [$platform]
+                else . end')
             echo "::endgroup::"
           done
-          # Overall size summary
-          OVERALL_SIZE=$(echo $TOTAL_SIZE_NEW | numfmt $FMT)
-          OVERALL_DIFF=$((TOTAL_SIZE_NEW - TOTAL_SIZE_OLD))
-          if (( OVERALL_DIFF > 0 )); then
-            OVERALL_SIZE+=" \`+$(echo $OVERALL_DIFF | numfmt $FMT)\`"
-          elif (( OVERALL_DIFF < 0 )); then
-            OVERALL_SIZE+=" \`$(echo $OVERALL_DIFF | numfmt $FMT)\`"
-          fi
-          BODY+=$'## Build Details\n\n'
-          if [[ "$HAVE_REMOTE" != "true" ]]; then
-            BODY+=$'> [!WARNING]\n'
-            BODY+=$'> Size comparison may be inaccurate.'
-            BODY+=$' Failed to pull remote image for the following platforms:\n'
-            for FP in "${FAILED_PLATFORMS[@]}"; do
-              BODY+="> * \`$FP\`"$'\n'
-            done
-            BODY+=$'\n'
-          fi
-          BODY+="**Size:** $OVERALL_SIZE"$'\n'
-          BODY+=$'\n### Platforms\n\n'
-          BODY+="$PLATFORM_BODIES"
           echo "::group::Report final image details"
           docker image ls --tree 2>/dev/null
           echo "::endgroup::"
-          gh pr comment "$PULL_REQUEST_NUMBER" --body "$BODY"
+          echo "$JSON" > "build-details-${RELEASE}.json"
         env:
+          RELEASE: ${{matrix.release}}
           REMOTE_IMAGE: ghcr.io/${{github.repository_owner}}/base-ubuntu
           LOCAL_IMAGE_TAG: ${{steps.info.outputs.ci-image-tag}}
           PLATFORMS: ${{steps.info.outputs.platforms}}
+      - name: Upload build details
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-details-${{matrix.release}}
+          path: build-details-${{matrix.release}}.json
+  build-details:
+    name: Build Details
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    needs: build-and-test
+    steps:
+      - name: Download build details
+        uses: actions/download-artifact@v4
+        with:
+          pattern: build-details-*
+          merge-multiple: true
+      - name: Hide outdated build details comment
+        uses: int128/hide-comment-action@v1.53.0
+        with:
+          starts-with: <!-- build details -->
+      - name: Post build details comment
+        run: |
+          BODY="<!-- build details -->"
+          FMT='--to=iec --suffix=B --format=%.2f'
+          for FILE in $(ls build-details-*.json | sort); do
+            RELEASE=$(jq -r '.release' "$FILE")
+            HAVE_REMOTE=$(jq -r '.have_remote' "$FILE")
+            TOTAL_SIZE_NEW=$(jq -r '.total_size_new' "$FILE")
+            TOTAL_SIZE_OLD=$(jq -r '.total_size_old' "$FILE")
+            # Overall size
+            OVERALL_SIZE=$(echo "$TOTAL_SIZE_NEW" | numfmt $FMT)
+            OVERALL_DIFF=$((TOTAL_SIZE_NEW - TOTAL_SIZE_OLD))
+            if (( OVERALL_DIFF > 0 )); then
+              OVERALL_SIZE+=" \`+$(echo $OVERALL_DIFF | numfmt $FMT)\`"
+            elif (( OVERALL_DIFF < 0 )); then
+              OVERALL_SIZE+=" \`$(echo $OVERALL_DIFF | numfmt $FMT)\`"
+            fi
+            BODY+=$'\n\n'"## Build Details (${RELEASE})"$'\n\n'
+            if [[ "$HAVE_REMOTE" != "true" ]]; then
+              BODY+=$'> [!WARNING]\n'
+              BODY+=$'> Size comparison may be inaccurate.'
+              BODY+=$' Failed to pull remote image for the following'
+              BODY+=$' platforms:\n'
+              while read -r FP; do
+                BODY+="> * \`$FP\`"$'\n'
+              done < <(jq -r '.failed_platforms[]' "$FILE")
+              BODY+=$'\n'
+            fi
+            BODY+="**Size:** $OVERALL_SIZE"$'\n'
+            BODY+=$'\n### Platforms\n\n'
+            PLATFORM_COUNT=$(jq '.platforms | length' "$FILE")
+            for ((i=0; i<PLATFORM_COUNT; i++)); do
+              PLATFORM=$(jq -r ".platforms[$i].name" "$FILE")
+              SIZE_NEW=$(jq -r ".platforms[$i].size_new" "$FILE")
+              SIZE_OLD=$(jq -r ".platforms[$i].size_old" "$FILE")
+              PULL_FAILED=$(jq -r ".platforms[$i].pull_failed" "$FILE")
+              LAYERS=$(jq -r ".platforms[$i].layers" "$FILE")
+              SIZE=$(echo "$SIZE_NEW" | numfmt $FMT)
+              DIFF=$((SIZE_NEW - SIZE_OLD))
+              if (( DIFF > 0 )); then
+                SIZE+=" \`+$(echo $DIFF | numfmt $FMT)\`"
+              elif (( DIFF < 0 )); then
+                SIZE+=" \`$(echo $DIFF | numfmt $FMT)\`"
+              fi
+              if (( DIFF > 0 )); then
+                STATUS=":red_square:"
+              elif (( DIFF < 0 )); then
+                STATUS=":yellow_square:"
+              else
+                STATUS=":green_square:"
+              fi
+              BODY+=$'<details>\n'
+              BODY+="<summary><code>$PLATFORM</code>"
+              BODY+=" $STATUS</summary><br/>"$'\n\n'
+              if [[ "$PULL_FAILED" == "true" ]]; then
+                BODY+=$'> [!NOTE]\n'
+                BODY+=$'> Remote image unavailable.'
+                BODY+=$' Size comparison skipped'
+                BODY+=$' for this platform.\n\n'
+              fi
+              BODY+="**Size:** $SIZE"$'\n'
+              BODY+=$'\n#### Layers\n\n'
+              BODY+=$'| Size | Created By |\n'
+              BODY+=$'| ---- | ---------- |\n'
+              BODY+="$LAYERS"
+              BODY+=$'\n\n</details>\n\n'
+            done
+          done
+          gh pr comment "$PULL_REQUEST_NUMBER" \
+            --repo "$GITHUB_REPOSITORY" --body "$BODY"
+        env:
           PULL_REQUEST_NUMBER: ${{github.event.pull_request.number}}
           GITHUB_TOKEN: ${{github.token}}
   label:
