@@ -1,0 +1,15 @@
+.git/
+.github/
+.vscode/
+test/
+packages/required.txt
+.dockerignore
+.editorconfig
+.gitattributes
+.gitignore
+.hadolint.yml
+.markdownlint.yml
+.markdownlintignore
+Dockerfile
+LICENSE
+README.md

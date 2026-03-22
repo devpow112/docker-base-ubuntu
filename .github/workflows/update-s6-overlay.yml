@@ -12,16 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:
+      fail-fast: false
       matrix:
-        branch:
-          - main
-          - release/jammy
-          - release/focal
+        release:
+          - noble
+          - jammy
+          - focal
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
-        with:
-          ref: ${{matrix.branch}}
       - name: Generate app token
         id: app-token
         uses: actions/create-github-app-token@v3.0.0
@@ -35,7 +34,7 @@ jobs:
           VERSION_REGEX='([0-9]+\.){3}[0-9]+(\-[0-9]+)?'
           REGEX="^((ARG | {4})?S6_OVERLAY_VERSION=)${VERSION_REGEX}$"
           OLD_VERSION=$(
-            grep -oEi "${REGEX}" Dockerfile |
+            grep -oEi "${REGEX}" releases/${RELEASE}/Dockerfile |
             grep -oEi "${VERSION_REGEX}"
           )
           NEW_VERSION=$(
@@ -47,6 +46,7 @@ jobs:
           NEW_VERSION=${NEW_VERSION#'v'}
           RELEASES='https://github.com/just-containers/s6-overlay/releases'
           UPDATE_TITLE="Bump s6 overlay from ${OLD_VERSION} to ${NEW_VERSION}"
+          UPDATE_TITLE+=" (${RELEASE})"
           UPDATE_BODY='Bump s6 overlay from'
           UPDATE_BODY+="[${OLD_VERSION}](${RELEASES}/v${OLD_VERSION}) "
           UPDATE_BODY+="to [${NEW_VERSION}](${RELEASES}/v${NEW_VERSION})."
@@ -60,11 +60,16 @@ jobs:
           echo "update-body=${UPDATE_BODY}" >> "${GITHUB_OUTPUT}"
           echo "commit-author=${COMMIT_AUTHOR}" >> "${GITHUB_OUTPUT}"
         env:
+          RELEASE: ${{matrix.release}}
           GITHUB_TOKEN: ${{steps.app-token.outputs.token}}
           GITHUB_APP_SLUG: ${{steps.app-token.outputs.app-slug}}
       - name: Update Dockerfile
-        run: sed -i -E "s/${REPLACE_REGEX}/\1${S6_OVERLAY_VERSION}/" Dockerfile
+        run: >
+          sed -i -E
+          "s/${REPLACE_REGEX}/\1${S6_OVERLAY_VERSION}/"
+          releases/${RELEASE}/Dockerfile
         env:
+          RELEASE: ${{matrix.release}}
           S6_OVERLAY_VERSION: ${{steps.info.outputs.s6-overlay-version}}
           REPLACE_REGEX: ${{steps.info.outputs.replace-regex}}
       - name: Handle changes
@@ -75,9 +80,9 @@ jobs:
           commit-message: ${{steps.info.outputs.update-title}}
           author: ${{steps.info.outputs.commit-author}}
           committer: ${{steps.info.outputs.commit-author}}
-          add-paths: Dockerfile
-          base: ${{matrix.branch}}
-          branch: auto/update-s6-overlay/${{matrix.branch}}
+          add-paths: releases/${{matrix.release}}/Dockerfile
+          base: main
+          branch: auto/update-s6-overlay/${{matrix.release}}
           delete-branch: true
           title: ${{steps.info.outputs.update-title}}
           body: ${{steps.info.outputs.update-body}}

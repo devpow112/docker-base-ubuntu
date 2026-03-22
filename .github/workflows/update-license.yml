@@ -11,17 +11,9 @@ jobs:
     name: Update License
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    strategy:
-      matrix:
-        branch:
-          - main
-          - release/jammy
-          - release/focal
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
-        with:
-          ref: ${{matrix.branch}}
       - name: Generate app token
         id: app-token
         uses: actions/create-github-app-token@v3.0.0
@@ -63,8 +55,8 @@ jobs:
           author: ${{steps.info.outputs.commit-author}}
           committer: ${{steps.info.outputs.commit-author}}
           add-paths: LICENSE
-          base: ${{matrix.branch}}
-          branch: auto/update-license/${{matrix.branch}}
+          base: main
+          branch: auto/update-license
           delete-branch: true
           title: ${{steps.info.outputs.update-title}}
           body: ${{steps.info.outputs.update-body}}
