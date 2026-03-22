@@ -70,8 +70,10 @@ jobs:
           RELEASE_BRANCH=${GITHUB_REF#refs/heads/}
           DOCKER_TAGS="$PACKAGE:$RELEASE_VERSION"
           DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:$STREAM"
+          RELEASE_LATEST='false'
           if [[ "$RELEASE_BRANCH" == 'main' ]]; then
             DOCKER_TAGS="$DOCKER_TAGS,$PACKAGE:latest"
+            RELEASE_LATEST='true'
           fi
           RELEASE_COMMIT="$GITHUB_SHA"
           DATETIME=$(date --utc +%FT%T.%3NZ)
@@ -81,12 +83,14 @@ jobs:
           echo "Release Branch: $RELEASE_BRANCH"
           echo "Release Commit: $RELEASE_COMMIT"
           echo "Docker Tags: $DOCKER_TAGS"
+          echo "Release Latest: $RELEASE_LATEST"
           echo 'create-release=true' >> $GITHUB_OUTPUT
           echo "datetime=$DATETIME" >> $GITHUB_OUTPUT
           echo "release-version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
           echo "release-branch=$RELEASE_BRANCH" >> $GITHUB_OUTPUT
           echo "release-commit=$RELEASE_COMMIT" >> $GITHUB_OUTPUT
           echo "docker-tags=$DOCKER_TAGS" >> $GITHUB_OUTPUT
+          echo "release-latest=$RELEASE_LATEST" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{github.token}}
           DELIMITER: '.'
@@ -122,9 +126,11 @@ jobs:
             --target "$BRANCH" \
             --title "$TAG" \
             --verify-tag \
-            --generate-notes
+            --generate-notes \
+            --latest="$LATEST"
         env:
           TAG: ${{steps.info.outputs.release-version}}
           BRANCH: ${{steps.info.outputs.release-branch}}
           COMMIT: ${{steps.info.outputs.release-commit}}
+          LATEST: ${{steps.info.outputs.release-latest}}
           GITHUB_TOKEN: ${{github.token}}
