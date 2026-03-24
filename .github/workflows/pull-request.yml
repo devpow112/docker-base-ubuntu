@@ -64,7 +64,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6.0.2
       - name: Set up EditorConfig Checker
-        uses: editorconfig-checker/action-editorconfig-checker@v2.1.0
+        uses: editorconfig-checker/action-editorconfig-checker@v2.2.0
       - name: Check formatting
         run: editorconfig-checker
   check-formatting-dockerfile:
