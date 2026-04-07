@@ -41,6 +41,7 @@ jobs:
           PR_NUMBER: ${{github.event.pull_request.number}}
       - name: Push changes
         uses: peter-evans/create-pull-request@v8.1.0
+        id: changes
         with:
           token: ${{github.token}}
           commit-message: ${{steps.info.outputs.title}}
@@ -56,6 +57,13 @@ jobs:
           labels: |
             dependencies
             auto
+      - name: Report status
+        if: >
+          steps.changes.outputs.pull-request-operation == 'created' ||
+          steps.changes.outputs.pull-request-operation == 'updated'
+        uses: actions/github-script@v8.0.0
+        with:
+          script: core.setFailed('Build changes detected')
   check-formatting-all:
     name: Check Formatting (All)
     runs-on: ubuntu-latest
