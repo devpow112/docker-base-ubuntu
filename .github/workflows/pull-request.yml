@@ -41,7 +41,7 @@ jobs:
           PR_NUMBER: ${{github.event.pull_request.number}}
       - name: Push changes
         uses: peter-evans/create-pull-request@v8.1.0
-        id: changes        
+        id: changes
         with:
           token: ${{github.token}}
           commit-message: ${{steps.info.outputs.title}}
