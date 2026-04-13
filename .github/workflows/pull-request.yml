@@ -170,7 +170,7 @@ jobs:
           TEST_IMAGE_TAG: ${{steps.info.outputs.ci-test-image-tag}}
           PLATFORMS: ${{steps.info.outputs.platforms}}
       - name: Hide outdated build details comments
-        uses: int128/hide-comment-action@v1.54.0
+        uses: int128/hide-comment-action@v1.55.0
         with:
           starts-with: <!-- build details -->
       - name: Create build details comment
