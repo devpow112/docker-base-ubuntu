@@ -136,7 +136,7 @@ jobs:
         with:
           platforms: ${{steps.info.outputs.platforms}}
       - name: Build image
-        uses: docker/build-push-action@v7.0.0
+        uses: docker/build-push-action@v7.1.0
         with:
           context: .
           platforms: ${{steps.info.outputs.platforms}}
@@ -145,7 +145,7 @@ jobs:
           cache-to: type=gha,mode=max
           load: true
       - name: Build test image
-        uses: docker/build-push-action@v7.0.0
+        uses: docker/build-push-action@v7.1.0
         with:
           context: ./test
           build-contexts: |
