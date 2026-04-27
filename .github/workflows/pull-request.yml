@@ -127,7 +127,7 @@ jobs:
           echo "ci-image-tag=$TEMP_IMAGE:image" >> $GITHUB_OUTPUT
           echo "ci-test-image-tag=$TEMP_IMAGE:test-image" >> $GITHUB_OUTPUT
       - name: Set up Docker
-        uses: docker/setup-docker-action@v5.0.0
+        uses: docker/setup-docker-action@v5.1.0
         with:
           daemon-config: |
             { "features": { "containerd-snapshotter": true } }
@@ -136,7 +136,7 @@ jobs:
         with:
           platforms: ${{steps.info.outputs.platforms}}
       - name: Build image
-        uses: docker/build-push-action@v7.0.0
+        uses: docker/build-push-action@v7.1.0
         with:
           context: .
           platforms: ${{steps.info.outputs.platforms}}
@@ -145,7 +145,7 @@ jobs:
           cache-to: type=gha,mode=max
           load: true
       - name: Build test image
-        uses: docker/build-push-action@v7.0.0
+        uses: docker/build-push-action@v7.1.0
         with:
           context: ./test
           build-contexts: |
