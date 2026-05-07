@@ -1,6 +1,7 @@
 apt-utils=2.8.3
 ca-certificates=20240203
 curl=8.5.0-2ubuntu10.9
+dpkg=1.22.6ubuntu6.6
 libbrotli1=1.1.0-2build2
 libcap2=1:2.66-5ubuntu2.4
 libcurl4t64=8.5.0-2ubuntu10.9
@@ -10,7 +11,7 @@ libkeyutils1=1.6.3-3build1
 libkrb5-3=1.20.1-6ubuntu2.6
 libkrb5support0=1.20.1-6ubuntu2.6
 libldap2=2.6.10+dfsg-0ubuntu0.24.04.1
-libnghttp2-14=1.59.0-1ubuntu0.2
+libnghttp2-14=1.59.0-1ubuntu0.3
 libpsl5t64=0.21.2-1.1build1
 librtmp1=2.4+20151223.gitfa8646d.1-2build7
 libsasl2-2=2.1.28+dfsg1-5ubuntu3.1
