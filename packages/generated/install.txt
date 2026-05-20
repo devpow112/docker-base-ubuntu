@@ -5,6 +5,7 @@ dpkg=1.22.6ubuntu6.6
 libbrotli1=1.1.0-2build2
 libcap2=1:2.66-5ubuntu2.4
 libcurl4t64=8.5.0-2ubuntu10.9
+libgnutls30t64=3.8.3-1.1ubuntu3.6
 libgssapi-krb5-2=1.20.1-6ubuntu2.6
 libk5crypto3=1.20.1-6ubuntu2.6
 libkeyutils1=1.6.3-3build1
