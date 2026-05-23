@@ -1,10 +1,10 @@
-FROM ubuntu:noble-20260324
+FROM ubuntu:noble-20260410
 
 # set default input arguments
 ARG TARGETPLATFORM \
     LANGUAGE=en_US \
     ENCODING=UTF-8 \
-    S6_OVERLAY_VERSION=3.2.2.0
+    S6_OVERLAY_VERSION=3.2.3.0
 
 # set default shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
