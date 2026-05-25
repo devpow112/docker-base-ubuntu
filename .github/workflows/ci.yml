@@ -60,12 +60,12 @@ jobs:
         with:
           platforms: ${{steps.info.outputs.platforms}}
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.0.0
+        uses: docker/setup-buildx-action@v4.1.0
         id: buildx
         with:
           driver-opts: network=host
       - name: Build image
-        uses: docker/build-push-action@v7.1.0
+        uses: docker/build-push-action@v7.2.0
         with:
           context: .
           builder: ${{steps.buildx.outputs.name}}
@@ -75,7 +75,7 @@ jobs:
           cache-to: type=gha,mode=max
           push: true
       - name: Build test image
-        uses: docker/build-push-action@v7.1.0
+        uses: docker/build-push-action@v7.2.0
         with:
           context: ./test
           builder: ${{steps.buildx.outputs.name}}
