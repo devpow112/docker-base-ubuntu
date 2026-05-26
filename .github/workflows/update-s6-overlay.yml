@@ -23,9 +23,9 @@ jobs:
         uses: actions/checkout@v6.0.2
       - name: Generate app token
         id: app-token
-        uses: actions/create-github-app-token@v3.0.0
+        uses: actions/create-github-app-token@v3.2.0
         with:
-          app-id: ${{secrets.GH_APP_ID}}
+          client-id: ${{secrets.GH_APP_CLIENT_ID}}
           private-key: ${{secrets.GH_APP_PRIVATE_KEY}}
       - name: Determine info
         shell: bash
@@ -73,7 +73,7 @@ jobs:
           S6_OVERLAY_VERSION: ${{steps.info.outputs.s6-overlay-version}}
           REPLACE_REGEX: ${{steps.info.outputs.replace-regex}}
       - name: Handle changes
-        uses: peter-evans/create-pull-request@v8.1.0
+        uses: peter-evans/create-pull-request@v8.1.1
         id: changes
         with:
           token: ${{steps.app-token.outputs.token}}
