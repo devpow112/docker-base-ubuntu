@@ -309,4 +309,4 @@ jobs:
       pull-requests: write
     steps:
       - name: Apply labels
-        uses: actions/labeler@v6.0.1
+        uses: actions/labeler@v6.1.0
