@@ -22,7 +22,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
         with:
           ref: ${{github.head_ref}}
       - name: Update packages
@@ -70,7 +70,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
       - name: Set up EditorConfig Checker
         uses: editorconfig-checker/action-editorconfig-checker@v2.2.0
       - name: Check formatting
@@ -81,7 +81,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
       - name: Check formatting
         uses: hadolint/hadolint-action@v3.3.0
   check-formatting-markdown:
@@ -90,7 +90,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
       - name: Check formatting
         uses: davidanson/markdownlint-cli2-action@v23.2.0
         with:
@@ -106,7 +106,7 @@ jobs:
       - check-packages
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
       - name: Determine info
         id: info
         run: |
