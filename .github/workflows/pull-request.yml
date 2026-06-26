@@ -22,7 +22,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6
         with:
           ref: ${{github.head_ref}}
       - name: Update packages
@@ -40,7 +40,7 @@ jobs:
           GITHUB_TOKEN: ${{github.token}}
           PR_NUMBER: ${{github.event.pull_request.number}}
       - name: Push changes
-        uses: peter-evans/create-pull-request@v8.1.1
+        uses: peter-evans/create-pull-request@v8
         id: changes
         with:
           token: ${{github.token}}
@@ -61,7 +61,7 @@ jobs:
         if: >
           steps.changes.outputs.pull-request-operation == 'created' ||
           steps.changes.outputs.pull-request-operation == 'updated'
-        uses: actions/github-script@v9.0.0
+        uses: actions/github-script@v9
         with:
           script: core.setFailed('Build changes detected')
   check-formatting-all:
@@ -70,9 +70,9 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6
       - name: Set up EditorConfig Checker
-        uses: editorconfig-checker/action-editorconfig-checker@v2.2.0
+        uses: editorconfig-checker/action-editorconfig-checker@v2
       - name: Check formatting
         run: editorconfig-checker
   check-formatting-dockerfile:
@@ -81,7 +81,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6
       - name: Check formatting
         uses: hadolint/hadolint-action@v3.3.0
   check-formatting-markdown:
@@ -90,9 +90,9 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6
       - name: Check formatting
-        uses: davidanson/markdownlint-cli2-action@v23.2.0
+        uses: davidanson/markdownlint-cli2-action@v23
         with:
           globs: '**/*.md'
   build-and-test:
@@ -106,7 +106,7 @@ jobs:
       - check-packages
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6
       - name: Determine info
         id: info
         run: |
@@ -127,16 +127,16 @@ jobs:
           echo "ci-image-tag=$TEMP_IMAGE:image" >> $GITHUB_OUTPUT
           echo "ci-test-image-tag=$TEMP_IMAGE:test-image" >> $GITHUB_OUTPUT
       - name: Set up Docker
-        uses: docker/setup-docker-action@v5.2.0
+        uses: docker/setup-docker-action@v5
         with:
           daemon-config: |
             { "features": { "containerd-snapshotter": true } }
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4.1.0
+        uses: docker/setup-qemu-action@v4
         with:
           platforms: ${{steps.info.outputs.platforms}}
       - name: Build image
-        uses: docker/build-push-action@v7.2.0
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: ${{steps.info.outputs.platforms}}
@@ -145,7 +145,7 @@ jobs:
           cache-to: type=gha,mode=max
           load: true
       - name: Build test image
-        uses: docker/build-push-action@v7.2.0
+        uses: docker/build-push-action@v7
         with:
           context: ./test
           build-contexts: |
@@ -170,7 +170,7 @@ jobs:
           TEST_IMAGE_TAG: ${{steps.info.outputs.ci-test-image-tag}}
           PLATFORMS: ${{steps.info.outputs.platforms}}
       - name: Hide outdated build details comments
-        uses: int128/hide-comment-action@v1.60.0
+        uses: int128/hide-comment-action@v1
         with:
           starts-with: <!-- build details -->
       - name: Create build details comment
@@ -309,4 +309,4 @@ jobs:
       pull-requests: write
     steps:
       - name: Apply labels
-        uses: actions/labeler@v6.1.0
+        uses: actions/labeler@v6

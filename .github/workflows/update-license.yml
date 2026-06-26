@@ -19,12 +19,12 @@ jobs:
           - release/focal
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6
         with:
           ref: ${{matrix.branch}}
       - name: Generate app token
         id: app-token
-        uses: actions/create-github-app-token@v3.2.0
+        uses: actions/create-github-app-token@v3
         with:
           client-id: ${{secrets.GH_APP_CLIENT_ID}}
           private-key: ${{secrets.GH_APP_PRIVATE_KEY}}
@@ -55,7 +55,7 @@ jobs:
           LICENSE_YEAR: ${{steps.info.outputs.license-year}}
           REPLACE_REGEX: ${{steps.info.outputs.replace-regex}}
       - name: Handle changes
-        uses: peter-evans/create-pull-request@v8.1.1
+        uses: peter-evans/create-pull-request@v8
         id: changes
         with:
           token: ${{steps.app-token.outputs.token}}
