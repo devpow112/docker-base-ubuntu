@@ -27,5 +27,6 @@ locales=2.39-0ubuntu8.7
 openssl=3.0.13-0ubuntu3.11
 perl-base=5.38.2-3.2ubuntu0.3
 sed=4.9-2ubuntu0.24.04.1
+tar=1.35+dfsg-3ubuntu0.1
 tzdata=2026a-0ubuntu0.24.04.1
 xz-utils=5.6.1+really5.4.5-1ubuntu0.3
