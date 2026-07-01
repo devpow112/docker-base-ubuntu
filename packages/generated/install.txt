@@ -1,10 +1,10 @@
 apt-utils=2.8.3
 ca-certificates=20260601~24.04.1
-curl=8.5.0-2ubuntu10.9
+curl=8.5.0-2ubuntu10.10
 dpkg=1.22.6ubuntu6.6
 libbrotli1=1.1.0-2build2
 libcap2=1:2.66-5ubuntu2.4
-libcurl4t64=8.5.0-2ubuntu10.9
+libcurl4t64=8.5.0-2ubuntu10.10
 libgcrypt20=1.10.3-2ubuntu0.1
 libgnutls30t64=3.8.3-1.1ubuntu3.6
 libgssapi-krb5-2=1.20.1-6ubuntu2.6
