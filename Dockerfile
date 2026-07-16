@@ -4,7 +4,7 @@ FROM ubuntu:noble-20260610
 ARG TARGETPLATFORM \
     LANGUAGE=en_US \
     ENCODING=UTF-8 \
-    S6_OVERLAY_VERSION=3.2.3.0
+    S6_OVERLAY_VERSION=3.2.3.2
 
 # set default shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
