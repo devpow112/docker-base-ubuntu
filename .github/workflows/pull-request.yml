@@ -83,7 +83,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Check formatting
-        uses: hadolint/hadolint-action@v3.3.0
+        uses: hadolint/hadolint-action@v3.5.0
   check-formatting-markdown:
     name: Check Formatting (Markdown)
     runs-on: ubuntu-latest
