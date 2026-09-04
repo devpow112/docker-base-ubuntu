@@ -72,7 +72,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Set up EditorConfig Checker
-        uses: editorconfig-checker/action-editorconfig-checker@v2
+        uses: editorconfig-checker/action-editorconfig-checker@v3.0.0
       - name: Check formatting
         run: editorconfig-checker
   check-formatting-dockerfile:
